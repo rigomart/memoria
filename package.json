@@ -8,9 +8,9 @@
     "bun": ">=1.1.0"
   },
   "scripts": {
-    "dev": "bun --filter '*' dev",
-    "build": "bun --filter '*' build",
-    "test": "bun --filter '*' test",
-    "lint": "bun --filter '*' lint"
+    "dev": "bun run --workspaces dev",
+    "build": "bun run --workspaces build",
+    "test": "bun run --workspaces test",
+    "lint": "bun run --workspaces lint"
   }
 }
