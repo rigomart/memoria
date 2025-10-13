@@ -14,7 +14,6 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as documents from "../documents.js";
-import type * as myFunctions from "../myFunctions.js";
 import type * as projects from "../projects.js";
 import type * as utils from "../utils.js";
 
@@ -28,7 +27,6 @@ import type * as utils from "../utils.js";
  */
 declare const fullApi: ApiFromModules<{
   documents: typeof documents;
-  myFunctions: typeof myFunctions;
   projects: typeof projects;
   utils: typeof utils;
 }>;
