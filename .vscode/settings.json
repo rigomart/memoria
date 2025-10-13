@@ -11,5 +11,17 @@
   },
   "chat.tools.autoApprove": true,
   "chat.agent.maxRequests": 100,
-  "chatgpt.openOnStartup": true
+  "chatgpt.openOnStartup": true,
+  "files.readonlyInclude": {
+    "**/routeTree.gen.ts": true,
+    "**/convex/_generated/api.d.ts": true
+  },
+  "files.watcherExclude": {
+    "**/routeTree.gen.ts": true,
+    "**/convex/_generated/api.d.ts": true
+  },
+  "search.exclude": {
+    "**/routeTree.gen.ts": true,
+    "**/convex/_generated/api.d.ts": true
+  }
 }
