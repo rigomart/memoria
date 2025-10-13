@@ -4,6 +4,7 @@ import { Authenticated, AuthLoading, Unauthenticated, useMutation, useQuery } fr
 import { useEffect, useState } from "react";
 import { baseAppBreadcrumb, PageBreadcrumbs } from "@/components/page-breadcrumbs";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ValidationError } from "@/components/validation-error";
 import { api } from "../../../../../convex/_generated/api";
 import type { Doc, Id } from "../../../../../convex/_generated/dataModel";
@@ -120,6 +121,13 @@ function DocumentEditor({ project, document }: DocumentEditorProps) {
   const isOverLimit = sizeBytes > MAX_DOCUMENT_SIZE_BYTES;
 
   const isDirty = body !== document.body;
+  const statusLabel = (document.status ?? "draft").toLowerCase();
+  const formattedStatus = statusLabel.slice(0, 1).toUpperCase() + statusLabel.slice(1);
+  const sizeLabel = `${sizeKilobytes} KB / ${limitKilobytes} KB`;
+  const updatedLabel = new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(document.updated));
 
   const handleSave = async () => {
     if (!isDirty || isSaving) {
@@ -146,53 +154,78 @@ function DocumentEditor({ project, document }: DocumentEditorProps) {
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="space-y-1">
-        <p className="text-xs uppercase tracking-wide text-muted-foreground">Project</p>
-        <h1 className="text-2xl font-semibold text-foreground">{project.name}</h1>
-        <p className="text-sm text-muted-foreground">Editing “{document.title}”</p>
-      </header>
+    <div className="flex flex-col gap-8">
+      <Card className="border-border/60 bg-muted/10 shadow-sm shadow-primary/5 backdrop-blur">
+        <CardHeader className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div className="space-y-2">
+            <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground/70">
+              Project · {project.name}
+            </span>
+            <CardTitle className="text-3xl font-semibold text-foreground">
+              {document.title}
+            </CardTitle>
+            <CardDescription className="text-sm text-muted-foreground">
+              Make edits below and save when you are ready. Your changes sync instantly across
+              devices.
+            </CardDescription>
+          </div>
+          <div className="flex flex-wrap items-center gap-3 md:justify-end">
+            <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
+              {formattedStatus}
+            </span>
+            <span
+              className={`text-xs ${isOverLimit ? "font-semibold text-destructive" : "text-muted-foreground"}`}
+            >
+              {sizeLabel}
+            </span>
+            <span className="text-xs text-muted-foreground">Updated {updatedLabel}</span>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={handleSave}
+              disabled={isSaving || !isDirty || isOverLimit}
+            >
+              {isSaving ? "Saving…" : isDirty ? "Save changes" : "Saved"}
+            </Button>
+          </div>
+        </CardHeader>
+      </Card>
 
       {errorMessage ? <ValidationError message={errorMessage} /> : null}
       {successMessage ? (
-        <div className="rounded-md border border-emerald-400/40 bg-emerald-400/10 px-3 py-2 text-sm text-emerald-500">
+        <div className="flex items-center gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-400">
           {successMessage}
         </div>
       ) : null}
 
-      <section className="flex flex-wrap items-center gap-3 text-sm">
-        <span className="rounded-full border border-border px-3 py-1 font-medium text-muted-foreground">
-          {sizeKilobytes} KB / {limitKilobytes} KB
-        </span>
-        {isOverLimit ? (
-          <span className="text-sm font-medium text-destructive">
-            Document exceeds the 800KB limit. Please reduce its size before saving.
-          </span>
-        ) : (
-          <span className="text-sm text-muted-foreground">
-            Document size updates as you type. Keep under 800KB for reliable syncing.
-          </span>
-        )}
-      </section>
+      <Card className="border-border/60 bg-background/70 shadow-lg shadow-primary/5">
+        <CardContent className="p-0">
+          <textarea
+            value={body}
+            onChange={(event) => {
+              setBody(event.target.value);
+            }}
+            className="min-h-[60vh] w-full resize-y bg-transparent px-6 py-6 font-mono text-[0.95rem] leading-relaxed text-foreground outline-none focus-visible:outline-none focus-visible:ring-0"
+            spellCheck={false}
+            aria-invalid={isOverLimit}
+          />
+        </CardContent>
+      </Card>
 
-      <textarea
-        value={body}
-        onChange={(event) => {
-          setBody(event.target.value);
-        }}
-        className="min-h-[60vh] w-full flex-1 resize-vertical rounded-md border border-input bg-background px-4 py-3 font-mono text-sm leading-relaxed text-foreground outline-none ring-offset-background focus:border-primary focus:ring-2 focus:ring-primary/40"
-        spellCheck={false}
-        aria-invalid={isOverLimit}
-      />
-
-      <div className="flex items-center justify-between gap-4">
-        <p className="text-xs text-muted-foreground">
-          Last updated {new Date(document.updated).toLocaleString()}
+      {isOverLimit ? (
+        <p className="text-xs font-semibold text-destructive">
+          Document exceeds the 800KB limit. Trim the content before saving.
         </p>
-        <Button type="button" onClick={handleSave} disabled={isSaving || !isDirty || isOverLimit}>
-          {isSaving ? "Saving…" : isDirty ? "Save changes" : "Saved"}
-        </Button>
-      </div>
+      ) : (
+        <p className="text-xs text-muted-foreground">
+          Document size updates as you type. Keep under 800KB for reliable syncing.
+        </p>
+      )}
+
+      <p className="text-xs text-muted-foreground">
+        Last updated on {updatedLabel}. Unsaved changes are highlighted above.
+      </p>
     </div>
   );
 }

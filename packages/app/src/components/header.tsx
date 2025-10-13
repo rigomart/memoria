@@ -1,26 +1,33 @@
 import { SignInButton, UserButton } from "@clerk/clerk-react";
 import { Link } from "@tanstack/react-router";
 import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75">
-      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-4">
-        <Link to="/projects" className="text-lg font-semibold text-foreground">
-          Memoria
+    <header className="sticky top-0 z-20 border-b border-border/70 bg-gradient-to-b from-background/95 via-background/90 to-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/75">
+      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-6 px-4">
+        <Link to="/projects" className="flex items-center gap-3 text-foreground">
+          <span className="flex size-9 items-center justify-center rounded-full bg-primary text-base font-semibold text-primary-foreground shadow-sm shadow-primary/40">
+            M
+          </span>
+          <span className="flex flex-col leading-tight">
+            <span className="text-sm font-semibold uppercase tracking-wider">Memoria</span>
+            <span className="text-xs text-muted-foreground">Knowledge workspace</span>
+          </span>
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <AuthLoading>
-            <div className="size-9 rounded-full border border-border/80 bg-muted/40" aria-hidden />
+            <span className="flex size-9 items-center justify-center rounded-full border border-border/60 bg-muted/30">
+              <Spinner className="size-4 text-muted-foreground" />
+            </span>
           </AuthLoading>
           <Unauthenticated>
             <SignInButton mode="modal">
-              <button
-                type="button"
-                className="rounded-md border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted"
-              >
+              <Button type="button" variant="outline" size="sm">
                 Sign in
-              </button>
+              </Button>
             </SignInButton>
           </Unauthenticated>
           <Authenticated>
