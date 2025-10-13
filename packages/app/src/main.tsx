@@ -6,6 +6,7 @@ import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import { routeTree } from "./routeTree.gen";
 import "./index.css";
+import { ThemeProvider } from "./components/theme-provider";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -36,7 +37,9 @@ if (!rootElement.innerHTML) {
     <StrictMode>
       <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
         <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-          <RouterProvider router={router} />
+          <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+            <RouterProvider router={router} />
+          </ThemeProvider>
         </ConvexProviderWithClerk>
       </ClerkProvider>
     </StrictMode>,
