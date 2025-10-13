@@ -1,75 +1,93 @@
-# React + TypeScript + Vite
+# Memoria — Knowledge Base Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Memoria is a **Markdown-based knowledge base for developers** that helps teams keep track of architectural choices, conventions, and key feature details in a way that is easy for people—and AI coding tools—to use quickly.
 
-Currently, two official plugins are available:
+This is the main React application for the Memoria platform.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Technology Stack
 
-## React Compiler
+- **Runtime**: [Bun](https://bun.sh/) for fast JavaScript runtime and package management
+- **Framework**: [React 19](https://react.dev/) with TypeScript
+- **Build Tool**: [Vite](https://vite.dev/) with React Compiler enabled
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) with Radix UI components
+- **Routing**: [TanStack Router](https://tanstack.com/router) for type-safe routing
+- **Authentication**: [Clerk](https://clerk.com/) for user management and auth
+- **Backend**: [Convex](https://convex.dev/) for server-side functions and data persistence
+- **Linting**: [Biome](https://biomejs.dev/) for fast linting and formatting
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## Getting Started
 
-Note: This will impact Vite dev & build performances.
+### Prerequisites
 
-## Expanding the ESLint configuration
+- [Bun](https://bun.sh/) installed on your system
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Installation
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+# Install dependencies
+bun install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Development
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+# Start the development server
+bun dev
 ```
+
+The application will be available at `http://localhost:5173`
+
+### Build
+
+```bash
+# Build for production
+bun build
+```
+
+### Preview
+
+```bash
+# Preview the production build
+bun preview
+```
+
+### Linting
+
+```bash
+# Run linter and fix issues
+bun lint
+```
+
+## Environment Variables
+
+Copy `.env.local.example` to `.env.local` and configure the following variables:
+
+- `VITE_CLERK_PUBLISHABLE_KEY`: Your Clerk publishable key
+- `VITE_CONVEX_URL`: Your Convex deployment URL
+
+## Project Structure
+
+```
+src/
+├── components/     # React components
+├── routes/         # TanStack Router routes
+├── lib/           # Utility functions and configurations
+├── hooks/         # Custom React hooks
+└── styles/        # Global styles and CSS
+```
+
+## Key Features
+
+- **Project Knowledge Management**: Capture architectural decisions and conventions
+- **AI-Friendly Content**: Structured Markdown documents optimized for AI tools
+- **Real-time Collaboration**: Multiple users working together
+- **Search & Discovery**: Fast search across all knowledge documents
+- **Version Control**: Track changes and maintain history
+
+## Development Notes
+
+- This project uses Bun as the primary runtime and package manager
+- React Compiler is enabled for automatic optimizations
+- The application is configured with TypeScript strict mode
+- Biome is used for consistent code formatting and linting
+- Tailwind CSS is configured with the new v4 engine
