@@ -3,6 +3,7 @@ import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import { Authenticated, AuthLoading, Unauthenticated, useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { EmptyState } from "@/components/empty-state";
+import { baseAppBreadcrumb, PageBreadcrumbs } from "@/components/page-breadcrumbs";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -30,13 +31,22 @@ function ProjectDocumentsPage() {
   return (
     <div className="space-y-6">
       <AuthLoading>
-        <LoadingNotice message="Loading project…" />
+        <div className="space-y-4">
+          <PageBreadcrumbs
+            items={[baseAppBreadcrumb, { label: "Loading…" }]}
+            className="text-xs text-muted-foreground"
+          />
+          <LoadingNotice message="Loading project…" />
+        </div>
       </AuthLoading>
       <Authenticated>
         <ProjectDocumentsLoader handle={handle} />
       </Authenticated>
       <Unauthenticated>
-        <SignInPrompt />
+        <div className="space-y-4">
+          <PageBreadcrumbs items={[baseAppBreadcrumb]} className="text-xs text-muted-foreground" />
+          <SignInPrompt />
+        </div>
       </Unauthenticated>
     </div>
   );
@@ -50,14 +60,30 @@ function ProjectDocumentsLoader({ handle }: ProjectDocumentsLoaderProps) {
   const project = useQuery(api.projects.getProjectByHandle, { handle });
 
   if (project === undefined) {
-    return <LoadingNotice message="Loading project…" />;
+    return (
+      <>
+        <PageBreadcrumbs
+          items={[baseAppBreadcrumb, { label: "Loading…" }]}
+          className="text-xs text-muted-foreground"
+        />
+        <LoadingNotice message="Loading project…" />
+      </>
+    );
   }
 
   if (project === null) {
     throw notFound();
   }
 
-  return <ProjectDocumentsContent project={project} />;
+  return (
+    <>
+      <PageBreadcrumbs
+        items={[baseAppBreadcrumb, { label: project.name }]}
+        className="text-xs text-muted-foreground"
+      />
+      <ProjectDocumentsContent project={project} />
+    </>
+  );
 }
 
 type ProjectDocumentsContentProps = {

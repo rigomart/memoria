@@ -3,6 +3,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Authenticated, AuthLoading, Unauthenticated, useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { EmptyState } from "@/components/empty-state";
+import { baseAppBreadcrumb, PageBreadcrumbs } from "@/components/page-breadcrumbs";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,6 +28,7 @@ export const Route = createFileRoute("/projects/")({
 function ProjectsPage() {
   return (
     <div className="space-y-6">
+      <PageBreadcrumbs items={[baseAppBreadcrumb]} className="text-xs text-muted-foreground" />
       <AuthLoading>
         <LoadingNotice message="Preparing your workspace…" />
       </AuthLoading>

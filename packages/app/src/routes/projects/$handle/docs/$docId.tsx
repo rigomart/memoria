@@ -2,6 +2,7 @@ import { SignInButton } from "@clerk/clerk-react";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { Authenticated, AuthLoading, Unauthenticated, useMutation, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
+import { baseAppBreadcrumb, PageBreadcrumbs } from "@/components/page-breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { ValidationError } from "@/components/validation-error";
 import { api } from "../../../../../convex/_generated/api";
@@ -19,13 +20,22 @@ function DocumentEditorPage() {
   return (
     <div className="space-y-6">
       <AuthLoading>
-        <LoadingNotice message="Loading document…" />
+        <div className="space-y-4">
+          <PageBreadcrumbs
+            items={[baseAppBreadcrumb, { label: "Loading…" }]}
+            className="text-xs text-muted-foreground"
+          />
+          <LoadingNotice message="Loading document…" />
+        </div>
       </AuthLoading>
       <Authenticated>
         <DocumentEditorLoader handle={handle} docId={docId as Id<"documents">} />
       </Authenticated>
       <Unauthenticated>
-        <SignInPrompt />
+        <div className="space-y-4">
+          <PageBreadcrumbs items={[baseAppBreadcrumb]} className="text-xs text-muted-foreground" />
+          <SignInPrompt />
+        </div>
       </Unauthenticated>
     </div>
   );
@@ -46,14 +56,37 @@ function DocumentEditorLoader({ handle, docId }: DocumentEditorLoaderProps) {
   const document = useQuery(api.documents.getDocument, { documentId: docId });
 
   if (project === undefined || document === undefined) {
-    return <LoadingNotice message="Loading document…" />;
+    return (
+      <>
+        <PageBreadcrumbs
+          items={[baseAppBreadcrumb, { label: "Loading…" }]}
+          className="text-xs text-muted-foreground"
+        />
+        <LoadingNotice message="Loading document…" />
+      </>
+    );
   }
 
   if (project === null || document === null || document.projectId !== project._id) {
     throw notFound();
   }
 
-  return <DocumentEditor project={project} document={document} />;
+  return (
+    <>
+      <PageBreadcrumbs
+        items={[
+          baseAppBreadcrumb,
+          {
+            label: project.name,
+            to: { to: "/projects/$handle", params: { handle: project.handle } },
+          },
+          { label: document.title },
+        ]}
+        className="text-xs text-muted-foreground"
+      />
+      <DocumentEditor project={project} document={document} />
+    </>
+  );
 }
 
 function DocumentEditor({ project, document }: DocumentEditorProps) {

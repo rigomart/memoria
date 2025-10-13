@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noUnknownAtRules: These are valid rules with tailwindcss. Linter will consider them on ˆ2.3 */
 @import "tailwindcss";
 @import "tw-animate-css";
 
