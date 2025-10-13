@@ -2,6 +2,7 @@ import { SignInButton } from "@clerk/clerk-react";
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import { Authenticated, AuthLoading, Unauthenticated, useMutation, useQuery } from "convex/react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { EmptyState } from "@/components/empty-state";
 import { baseAppBreadcrumb, PageBreadcrumbs } from "@/components/page-breadcrumbs";
 import { Button } from "@/components/ui/button";
@@ -113,6 +114,7 @@ function ProjectDocumentsContent({ project }: ProjectDocumentsContentProps) {
         projectId: project._id,
         title: pendingTitle.trim() === "" ? undefined : pendingTitle.trim(),
       });
+      toast.success("Document created");
       setPendingTitle("");
       setIsDialogOpen(false);
       if (newDoc) {
@@ -130,6 +132,7 @@ function ProjectDocumentsContent({ project }: ProjectDocumentsContentProps) {
       } else {
         setErrorMessage("Failed to create document. Please try again.");
       }
+      toast.error("Failed to create document");
     } finally {
       setIsCreating(false);
     }
@@ -140,12 +143,14 @@ function ProjectDocumentsContent({ project }: ProjectDocumentsContentProps) {
     setDeletingDocumentId(documentId);
     try {
       await deleteDocument({ documentId });
+      toast.success("Document deleted");
     } catch (error) {
       if (error instanceof Error) {
         setErrorMessage(error.message);
       } else {
         setErrorMessage("Failed to delete document. Please try again.");
       }
+      toast.error("Failed to delete document");
     } finally {
       setDeletingDocumentId(null);
     }

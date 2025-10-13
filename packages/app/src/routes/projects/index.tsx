@@ -2,6 +2,7 @@ import { SignInButton } from "@clerk/clerk-react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Authenticated, AuthLoading, Unauthenticated, useMutation, useQuery } from "convex/react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { EmptyState } from "@/components/empty-state";
 import { baseAppBreadcrumb, PageBreadcrumbs } from "@/components/page-breadcrumbs";
 import { Button } from "@/components/ui/button";
@@ -67,6 +68,7 @@ function ProjectsContent() {
     setIsCreating(true);
     try {
       await createProject({ name: trimmedName });
+      toast.success(`Created project "${trimmedName}"`);
       setPendingName("");
       setIsDialogOpen(false);
     } catch (error) {
@@ -75,6 +77,7 @@ function ProjectsContent() {
       } else {
         setErrorMessage("Failed to create project. Please try again.");
       }
+      toast.error("Failed to create project");
     } finally {
       setIsCreating(false);
     }
@@ -85,12 +88,14 @@ function ProjectsContent() {
     setDeletingProjectId(projectId);
     try {
       await deleteProject({ projectId });
+      toast.success("Project deleted");
     } catch (error) {
       if (error instanceof Error) {
         setErrorMessage(error.message);
       } else {
         setErrorMessage("Failed to delete project. Please try again.");
       }
+      toast.error("Failed to delete project");
     } finally {
       setDeletingProjectId(null);
     }

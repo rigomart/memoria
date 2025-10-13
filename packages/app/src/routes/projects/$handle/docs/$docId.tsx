@@ -2,6 +2,7 @@ import { SignInButton } from "@clerk/clerk-react";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { Authenticated, AuthLoading, Unauthenticated, useMutation, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { baseAppBreadcrumb, PageBreadcrumbs } from "@/components/page-breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -96,7 +97,6 @@ function DocumentEditor({ project, document }: DocumentEditorProps) {
   const [lastSyncedUpdated, setLastSyncedUpdated] = useState<number | null>(document.updated);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (document.updated !== lastSyncedUpdated) {
@@ -104,16 +104,6 @@ function DocumentEditor({ project, document }: DocumentEditorProps) {
       setLastSyncedUpdated(document.updated);
     }
   }, [document, lastSyncedUpdated]);
-
-  useEffect(() => {
-    if (!successMessage) {
-      return;
-    }
-    const timeout = window.setTimeout(() => {
-      setSuccessMessage(null);
-    }, 3000);
-    return () => window.clearTimeout(timeout);
-  }, [successMessage]);
 
   const sizeBytes = new TextEncoder().encode(body).length;
   const sizeKilobytes = Math.round((sizeBytes / 1024) * 10) / 10;
@@ -135,19 +125,19 @@ function DocumentEditor({ project, document }: DocumentEditorProps) {
     }
     setIsSaving(true);
     setErrorMessage(null);
-    setSuccessMessage(null);
     try {
       await updateDocument({
         documentId: document._id,
         body,
       });
-      setSuccessMessage("Document saved");
+      toast.success("Document saved");
     } catch (error) {
       if (error instanceof Error) {
         setErrorMessage(error.message);
       } else {
         setErrorMessage("Failed to save document. Please try again.");
       }
+      toast.error("Failed to save document");
     } finally {
       setIsSaving(false);
     }
@@ -193,11 +183,6 @@ function DocumentEditor({ project, document }: DocumentEditorProps) {
       </Card>
 
       {errorMessage ? <ValidationError message={errorMessage} /> : null}
-      {successMessage ? (
-        <div className="flex items-center gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-400">
-          {successMessage}
-        </div>
-      ) : null}
 
       <Card className="border-border/60 bg-background/70 shadow-lg shadow-primary/5">
         <CardContent className="p-0">
