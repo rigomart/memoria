@@ -4,7 +4,7 @@ import type { useConvexAuth } from "convex/react";
 import { Header } from "@/components/header";
 
 interface RouterContext {
-  auth?: ReturnType<typeof useConvexAuth>;
+  auth: ReturnType<typeof useConvexAuth>;
 }
 
 const RootLayout = () => (

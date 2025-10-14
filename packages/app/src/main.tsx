@@ -8,23 +8,22 @@ import { routeTree } from "./routeTree.gen";
 import "./index.css";
 import { ThemeProvider } from "./components/theme-provider";
 import { Toaster } from "./components/ui/sonner";
+import { Spinner } from "./components/ui/spinner";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
-if (!PUBLISHABLE_KEY) {
-  throw new Error("Add your Clerk Publishable Key to the .env file");
-}
-
 const CONVEX_URL = import.meta.env.VITE_CONVEX_URL;
 
-if (!CONVEX_URL) {
-  throw new Error("Add your Convex deployment URL to the .env file as VITE_CONVEX_URL");
+if (!PUBLISHABLE_KEY || !CONVEX_URL) {
+  throw new Error("Add your Clerk Publishable Key and Convex deployment URL to the .env file");
 }
 
 const convex = new ConvexReactClient(CONVEX_URL);
 
 const router = createRouter({
   routeTree,
+  // biome-ignore lint/style/noNonNullAssertion: Recommended pattern for router context
+  context: { auth: undefined! },
 });
 
 declare module "@tanstack/react-router" {
@@ -35,6 +34,15 @@ declare module "@tanstack/react-router" {
 
 function InnerApp() {
   const auth = useConvexAuth();
+
+  if (auth.isLoading) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center">
+        <Spinner className="size-16" />
+      </div>
+    );
+  }
+
   return (
     <>
       <RouterProvider router={router} context={{ auth }} />
@@ -43,7 +51,6 @@ function InnerApp() {
   );
 }
 
-// Render the app
 const rootElement = document.getElementById("root");
 
 if (!rootElement) {
