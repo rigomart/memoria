@@ -25,9 +25,6 @@ const convex = new ConvexReactClient(CONVEX_URL);
 
 const router = createRouter({
   routeTree,
-  context: {
-    auth: undefined!,
-  },
 });
 
 declare module "@tanstack/react-router" {

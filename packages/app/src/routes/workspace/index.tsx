@@ -15,13 +15,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ValidationError } from "@/components/validation-error";
-import { api } from "../../../convex/_generated/api";
-import type { Doc, Id } from "../../../convex/_generated/dataModel";
+import { api } from "@/convex/_generated/api";
+import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { ProjectCard } from "./-components/project-card";
 
 const PROJECT_LIMIT = 2;
 
-export const Route = createFileRoute("/projects/")({
+export const Route = createFileRoute("/workspace/")({
   component: ProjectsPage,
 });
 
@@ -157,8 +157,8 @@ function ProjectsContent() {
               project={project as Doc<"projects">}
               onOpen={(selected) => {
                 navigate({
-                  to: "/projects/$handle",
-                  params: { handle: selected.handle },
+                  to: "/workspace/$projectHandle",
+                  params: { projectHandle: selected.handle },
                 });
               }}
               onDelete={handleDeleteProject}

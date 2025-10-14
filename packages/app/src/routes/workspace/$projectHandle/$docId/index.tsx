@@ -24,13 +24,13 @@ function formatTimestamp(timestamp: number) {
   }
 }
 
-export const Route = createFileRoute("/projects/$handle/docs/$docId")({
+export const Route = createFileRoute("/workspace/$projectHandle/$docId/")({
   component: DocumentEditorPage,
 });
 
 function DocumentEditorPage() {
-  const { handle, docId } = Route.useParams();
-  return <DocumentEditorLoader handle={handle} docId={docId as Id<"documents">} />;
+  const { projectHandle, docId } = Route.useParams();
+  return <DocumentEditorLoader handle={projectHandle} docId={docId as Id<"documents">} />;
 }
 
 type DocumentEditorProps = {

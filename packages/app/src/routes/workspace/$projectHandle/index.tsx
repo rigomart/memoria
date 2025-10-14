@@ -21,13 +21,13 @@ import { DocumentListItem } from "./-components/document-list-item";
 
 const DOCUMENT_LIMIT = 5;
 
-export const Route = createFileRoute("/projects/$handle/")({
+export const Route = createFileRoute("/workspace/$projectHandle/")({
   component: ProjectDocumentsPage,
 });
 
 function ProjectDocumentsPage() {
-  const { handle } = Route.useParams();
-  return <ProjectDocumentsLoader handle={handle} />;
+  const { projectHandle } = Route.useParams();
+  return <ProjectDocumentsLoader handle={projectHandle} />;
 }
 
 type ProjectDocumentsLoaderProps = {
@@ -98,9 +98,9 @@ function ProjectDocumentsContent({ project }: ProjectDocumentsContentProps) {
       setIsDialogOpen(false);
       if (newDoc) {
         navigate({
-          to: "/projects/$handle/docs/$docId",
+          to: "/workspace/$projectHandle/$docId",
           params: {
-            handle: project.handle,
+            projectHandle: project.handle,
             docId: newDoc._id,
           },
         });
@@ -198,8 +198,8 @@ function ProjectDocumentsContent({ project }: ProjectDocumentsContentProps) {
               document={document}
               onOpen={(docId) => {
                 navigate({
-                  to: "/projects/$handle/docs/$docId",
-                  params: { handle: project.handle, docId },
+                  to: "/workspace/$projectHandle/$docId",
+                  params: { projectHandle: project.handle, docId },
                 });
               }}
               onDelete={handleDeleteDocument}
