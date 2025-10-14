@@ -20,8 +20,8 @@ function HomeRoute() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      // Redirect to the original destination if provided, otherwise go to projects
-      const destination = redirect ?? "/projects";
+      // Redirect to the original destination if provided, otherwise go to workspace
+      const destination = redirect ?? "/workspace";
       navigate({ to: destination, search: { redirect: undefined } });
     }
   }, [isAuthenticated, isLoading, navigate, redirect]);
