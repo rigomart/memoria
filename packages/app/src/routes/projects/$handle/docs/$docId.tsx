@@ -155,72 +155,82 @@ function DocumentEditor({ document }: DocumentEditorProps) {
   };
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
       <Card className="border-border/60 bg-muted/10 shadow-sm shadow-primary/5 backdrop-blur">
-        <CardHeader className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="space-y-2">
-            <CardTitle className="text-3xl font-semibold text-foreground">
+        <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-1.5">
+            <CardTitle className="text-2xl font-semibold text-foreground">
               {document.title}
             </CardTitle>
-            <CardDescription className="text-sm text-muted-foreground">
+            <CardDescription className="text-xs text-muted-foreground">
               Make edits below and save when you are ready. Your changes sync instantly across
               devices.
             </CardDescription>
           </div>
-          <div className="flex flex-col items-end gap-2">
-            <div className="flex flex-wrap items-center gap-3 md:justify-end">
-              <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold uppercase">
+          <div className="flex flex-col items-start gap-3 text-xs text-muted-foreground md:items-end">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-border/60 bg-background/80 px-2 py-0.5 font-semibold uppercase tracking-wide text-[0.7rem] text-foreground">
                 {statusLabel}
               </span>
               {savedSizeKilobytes !== null ? (
-                <span className="text-xs text-muted-foreground">
-                  Saved size {savedSizeKilobytes} KB / {limitKilobytes} KB
+                <span>
+                  {savedSizeKilobytes} KB of {limitKilobytes} KB
                 </span>
               ) : null}
-              <span className="text-xs text-muted-foreground">Updated {updatedLabel}</span>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setShowPreview((previous) => !previous);
-                }}
-                aria-pressed={showPreview}
-              >
-                {showPreview ? (
-                  <>
-                    <FilePenLineIcon className="mr-2 size-4" aria-hidden />
-                    Edit
-                  </>
-                ) : (
-                  <>
-                    <EyeIcon className="mr-2 size-4" aria-hidden />
-                    Preview
-                  </>
-                )}
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={handleSave}
-                disabled={isSaving || !isDirty}
-              >
-                {isSaving ? "Saving…" : isDirty ? "Save changes" : "Saved"}
-              </Button>
+              <span>Updated {updatedLabel}</span>
             </div>
-            {activityMessage ? (
-              <span className="text-xs text-muted-foreground" aria-live="polite">
-                {activityMessage}
-              </span>
-            ) : null}
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={handleSave}
+              disabled={isSaving || !isDirty}
+            >
+              {isSaving ? "Saving…" : isDirty ? "Save changes" : "Saved"}
+            </Button>
           </div>
         </CardHeader>
       </Card>
 
-      <div className="border rounded-lg">
+      <div className="flex flex-col gap-2 rounded-lg border bg-background/80 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+        {activityMessage ? (
+          <span className="text-xs text-muted-foreground" aria-live="polite">
+            {activityMessage}
+          </span>
+        ) : (
+          <span className="text-xs text-muted-foreground">Connected</span>
+        )}
+        <div className="inline-flex items-center gap-2">
+          <Button
+            type="button"
+            variant={showPreview ? "ghost" : "secondary"}
+            size="sm"
+            onClick={() => {
+              setShowPreview(false);
+            }}
+            aria-pressed={!showPreview}
+          >
+            <FilePenLineIcon className="mr-2 size-4" aria-hidden />
+            Edit
+          </Button>
+          <Button
+            type="button"
+            variant={showPreview ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => {
+              setShowPreview(true);
+            }}
+            aria-pressed={showPreview}
+          >
+            <EyeIcon className="mr-2 size-4" aria-hidden />
+            Preview
+          </Button>
+        </div>
+      </div>
+
+      <div className="overflow-hidden rounded-lg border bg-background/80">
         {showPreview ? (
-          <div className="p-4 text-[0.95rem] leading-relaxed text-foreground">
+          <div className="min-h-[55vh] px-4 py-5 text-sm leading-6 text-foreground">
             <Streamdown>{draftBody}</Streamdown>
           </div>
         ) : (
@@ -230,7 +240,7 @@ function DocumentEditor({ document }: DocumentEditorProps) {
               const nextBody = event.target.value;
               setDraftBody(nextBody);
             }}
-            className="min-h-[60vh] w-full resize-y bg-transparent p-4 font-mono text-[0.95rem] leading-relaxed text-foreground outline-none focus-visible:outline-none focus-visible:ring-0"
+            className="min-h-[55vh] w-full resize-y bg-transparent px-4 py-5 font-mono text-sm leading-6 text-foreground outline-none focus-visible:outline-none focus-visible:ring-0"
             spellCheck={false}
           />
         )}
