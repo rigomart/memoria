@@ -30,7 +30,7 @@ export function ConflictModal({ open, onReload, onDismiss }: ConflictModalProps)
           <AlertDialogTitle>Someone else saved a newer version</AlertDialogTitle>
           <AlertDialogDescription>
             Another tab or device saved changes after you started editing. Reload to pull the latest
-            content—reloading will discard any unsaved edits you have locally, preventing an
+            content. Reloading will discard any unsaved edits you have locally, preventing an
             accidental overwrite.
           </AlertDialogDescription>
         </AlertDialogHeader>

@@ -8,15 +8,11 @@ import { Streamdown } from "streamdown";
 import { baseAppBreadcrumb, PageBreadcrumbs } from "@/components/page-breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ValidationError } from "@/components/validation-error";
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { ConflictModal } from "./-components/conflict-modal";
-import { RealtimeBanner } from "./-components/realtime-banner";
 
 const MAX_DOCUMENT_SIZE_BYTES = 800 * 1024;
-const CONFLICT_ERROR_MESSAGE =
-  "Document has been updated elsewhere. Please reload to see the latest version.";
 
 function formatTimestamp(timestamp: number) {
   try {
@@ -113,28 +109,20 @@ function DocumentEditor({ document }: DocumentEditorProps) {
   const [draftBody, setDraftBody] = useState(document.body);
   const [isSaving, setIsSaving] = useState(false);
   const [showPreview, setShowPreview] = useState(false); // TODO: not necessary. We should change how we handle preview.
-  const [showRealtimeBanner, setShowRealtimeBanner] = useState(false);
   const [conflictModalOpen, setConflictModalOpen] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const initialRevisionToken = useRef(document.revisionToken);
+  const localRevisionToken = useRef(document.revisionToken);
 
   const activityMessage = `Loaded at ${formatTimestamp(document.updated)}`;
 
   const isDirty = draftBody !== document.body;
 
   useEffect(() => {
-    if (initialRevisionToken.current === document.revisionToken) {
+    if (localRevisionToken.current === document.revisionToken) {
       return;
     }
-    if (draftBody === document.body) {
-      initialRevisionToken.current = document.revisionToken;
-      setDraftBody(document.body);
-      setShowRealtimeBanner(false);
-      setErrorMessage(null);
-    } else {
-      setShowRealtimeBanner(true);
-    }
-  }, [document.revisionToken, document.body, draftBody]);
+
+    setConflictModalOpen(true);
+  }, [document.revisionToken]);
 
   const limitKilobytes = Math.round((MAX_DOCUMENT_SIZE_BYTES / 1024) * 10) / 10;
   const savedSizeKilobytes = Math.round((document.sizeBytes / 1024) * 10) / 10;
@@ -147,30 +135,20 @@ function DocumentEditor({ document }: DocumentEditorProps) {
       return;
     }
     setIsSaving(true);
-    setErrorMessage(null);
     try {
-      const updatedDoc = await updateDocument({
+      const updatedDocument = await updateDocument({
         documentId: document._id,
         body: draftBody,
         revisionToken: document.revisionToken,
       });
-      if (updatedDoc) {
-        setShowRealtimeBanner(false);
-        setConflictModalOpen(false);
+
+      if (updatedDocument) {
+        localRevisionToken.current = updatedDocument.revisionToken;
       }
+
       toast.success("Document saved");
-    } catch (error) {
-      if (error instanceof Error && error.message.includes(CONFLICT_ERROR_MESSAGE)) {
-        setConflictModalOpen(true);
-        setShowRealtimeBanner(true);
-        setErrorMessage(null);
-        toast.warning("Newer changes detected. Reload required.");
-      } else {
-        const message =
-          error instanceof Error ? error.message : "Failed to save document. Please try again.";
-        setErrorMessage(message);
-        toast.error("Failed to save document");
-      }
+    } catch (_error) {
+      toast.error("Failed to save document");
     } finally {
       setIsSaving(false);
     }
@@ -240,16 +218,6 @@ function DocumentEditor({ document }: DocumentEditorProps) {
         </CardHeader>
       </Card>
 
-      {showRealtimeBanner ? (
-        <RealtimeBanner
-          onDismiss={() => {
-            setShowRealtimeBanner(false);
-          }}
-        />
-      ) : null}
-
-      {errorMessage ? <ValidationError message={errorMessage} /> : null}
-
       <div className="border rounded-lg">
         {showPreview ? (
           <div className="p-4 text-[0.95rem] leading-relaxed text-foreground">
@@ -261,7 +229,6 @@ function DocumentEditor({ document }: DocumentEditorProps) {
             onChange={(event) => {
               const nextBody = event.target.value;
               setDraftBody(nextBody);
-              setErrorMessage(null);
             }}
             className="min-h-[60vh] w-full resize-y bg-transparent p-4 font-mono text-[0.95rem] leading-relaxed text-foreground outline-none focus-visible:outline-none focus-visible:ring-0"
             spellCheck={false}
@@ -281,9 +248,6 @@ function DocumentEditor({ document }: DocumentEditorProps) {
         }}
         onReload={() => {
           setConflictModalOpen(false);
-          if (typeof window !== "undefined") {
-            window.location.reload();
-          }
         }}
       />
     </div>
