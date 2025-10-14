@@ -105,15 +105,15 @@ function DocumentEditor({ project, document }: DocumentEditorProps) {
     }
   }, [document, lastSyncedUpdated]);
 
-  const sizeBytes = new TextEncoder().encode(body).length;
-  const sizeKilobytes = Math.round((sizeBytes / 1024) * 10) / 10;
   const limitKilobytes = Math.round((MAX_DOCUMENT_SIZE_BYTES / 1024) * 10) / 10;
-  const isOverLimit = sizeBytes > MAX_DOCUMENT_SIZE_BYTES;
+  const savedSizeKilobytes =
+    typeof document.sizeBytes === "number"
+      ? Math.round((document.sizeBytes / 1024) * 10) / 10
+      : null;
 
   const isDirty = body !== document.body;
   const statusLabel = (document.status ?? "draft").toLowerCase();
   const formattedStatus = statusLabel.slice(0, 1).toUpperCase() + statusLabel.slice(1);
-  const sizeLabel = `${sizeKilobytes} KB / ${limitKilobytes} KB`;
   const updatedLabel = new Intl.DateTimeFormat(undefined, {
     dateStyle: "medium",
     timeStyle: "short",
@@ -163,18 +163,18 @@ function DocumentEditor({ project, document }: DocumentEditorProps) {
             <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
               {formattedStatus}
             </span>
-            <span
-              className={`text-xs ${isOverLimit ? "font-semibold text-destructive" : "text-muted-foreground"}`}
-            >
-              {sizeLabel}
-            </span>
+            {savedSizeKilobytes !== null ? (
+              <span className="text-xs text-muted-foreground">
+                Saved size {savedSizeKilobytes} KB / {limitKilobytes} KB
+              </span>
+            ) : null}
             <span className="text-xs text-muted-foreground">Updated {updatedLabel}</span>
             <Button
               type="button"
               variant="secondary"
               size="sm"
               onClick={handleSave}
-              disabled={isSaving || !isDirty || isOverLimit}
+              disabled={isSaving || !isDirty}
             >
               {isSaving ? "Saving…" : isDirty ? "Save changes" : "Saved"}
             </Button>
@@ -193,20 +193,14 @@ function DocumentEditor({ project, document }: DocumentEditorProps) {
             }}
             className="min-h-[60vh] w-full resize-y bg-transparent px-6 py-6 font-mono text-[0.95rem] leading-relaxed text-foreground outline-none focus-visible:outline-none focus-visible:ring-0"
             spellCheck={false}
-            aria-invalid={isOverLimit}
           />
         </CardContent>
       </Card>
 
-      {isOverLimit ? (
-        <p className="text-xs font-semibold text-destructive">
-          Document exceeds the 800KB limit. Trim the content before saving.
-        </p>
-      ) : (
-        <p className="text-xs text-muted-foreground">
-          Document size updates as you type. Keep under 800KB for reliable syncing.
-        </p>
-      )}
+      <p className="text-xs text-muted-foreground">
+        Document size is recalculated when you save. If the saved file exceeds {limitKilobytes} KB,
+        the save will fail so you can trim the content.
+      </p>
 
       <p className="text-xs text-muted-foreground">
         Last updated on {updatedLabel}. Unsaved changes are highlighted above.

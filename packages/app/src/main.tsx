@@ -15,7 +15,13 @@ if (!PUBLISHABLE_KEY) {
   throw new Error("Add your Clerk Publishable Key to the .env file");
 }
 
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
+const CONVEX_URL = import.meta.env.VITE_CONVEX_URL;
+
+if (!CONVEX_URL) {
+  throw new Error("Add your Convex deployment URL to the .env file as VITE_CONVEX_URL");
+}
+
+const convex = new ConvexReactClient(CONVEX_URL);
 
 const router = createRouter({ routeTree });
 
