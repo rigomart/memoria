@@ -218,6 +218,7 @@ export const createDocument = mutation({
       updated: now,
       sizeBytes: calculateSize(initialBody),
       createdAt: now,
+      revisionToken: crypto.randomUUID(),
     });
 
     return await ctx.db.get(docId);
@@ -228,6 +229,7 @@ export const updateDocument = mutation({
   args: {
     documentId: v.id("documents"),
     body: v.string(),
+    revisionToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx);
@@ -258,6 +260,14 @@ export const updateDocument = mutation({
 
     const validated = validateAndFillFrontmatter(parsed);
 
+    if (args.revisionToken !== document.revisionToken) {
+      throw new ConvexError(
+        "Document has been updated elsewhere. Please reload to see the latest version.",
+      );
+    }
+
+    const nextRevisionToken = crypto.randomUUID();
+
     await ctx.db.patch(document._id, {
       body: args.body,
       title: validated.title,
@@ -265,6 +275,7 @@ export const updateDocument = mutation({
       status: validated.status,
       updated: validated.updated,
       sizeBytes: size,
+      revisionToken: nextRevisionToken,
     });
 
     return await ctx.db.get(document._id);

@@ -1,16 +1,33 @@
 import { SignInButton } from "@clerk/clerk-react";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { Authenticated, AuthLoading, Unauthenticated, useMutation, useQuery } from "convex/react";
-import { useEffect, useState } from "react";
+import { EyeIcon, FilePenLineIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { Streamdown } from "streamdown";
 import { baseAppBreadcrumb, PageBreadcrumbs } from "@/components/page-breadcrumbs";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ValidationError } from "@/components/validation-error";
-import { api } from "../../../../../convex/_generated/api";
-import type { Doc, Id } from "../../../../../convex/_generated/dataModel";
+import { api } from "@/convex/_generated/api";
+import type { Doc, Id } from "@/convex/_generated/dataModel";
+import { ConflictModal } from "./-components/conflict-modal";
+import { RealtimeBanner } from "./-components/realtime-banner";
 
 const MAX_DOCUMENT_SIZE_BYTES = 800 * 1024;
+const CONFLICT_ERROR_MESSAGE =
+  "Document has been updated elsewhere. Please reload to see the latest version.";
+
+function formatTimestamp(timestamp: number) {
+  try {
+    return new Intl.DateTimeFormat(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }).format(new Date(timestamp));
+  } catch {
+    return new Date(timestamp).toLocaleString();
+  }
+}
 
 export const Route = createFileRoute("/projects/$handle/docs/$docId")({
   component: DocumentEditorPage,
@@ -44,7 +61,6 @@ function DocumentEditorPage() {
 }
 
 type DocumentEditorProps = {
-  project: Doc<"projects">;
   document: Doc<"documents">;
 };
 
@@ -53,6 +69,7 @@ type DocumentEditorLoaderProps = {
   docId: Id<"documents">;
 };
 
+// TODO: Project should not be necessary here. We can just get the document directly.
 function DocumentEditorLoader({ handle, docId }: DocumentEditorLoaderProps) {
   const project = useQuery(api.projects.getProjectByHandle, { handle });
   const document = useQuery(api.documents.getDocument, { documentId: docId });
@@ -86,38 +103,44 @@ function DocumentEditorLoader({ handle, docId }: DocumentEditorLoaderProps) {
         ]}
         className="text-xs text-muted-foreground"
       />
-      <DocumentEditor project={project} document={document} />
+      <DocumentEditor document={document} />
     </>
   );
 }
 
-function DocumentEditor({ project, document }: DocumentEditorProps) {
+function DocumentEditor({ document }: DocumentEditorProps) {
   const updateDocument = useMutation(api.documents.updateDocument);
-  const [body, setBody] = useState(document.body);
-  const [lastSyncedUpdated, setLastSyncedUpdated] = useState<number | null>(document.updated);
+  const [draftBody, setDraftBody] = useState(document.body);
   const [isSaving, setIsSaving] = useState(false);
+  const [showPreview, setShowPreview] = useState(false); // TODO: not necessary. We should change how we handle preview.
+  const [showRealtimeBanner, setShowRealtimeBanner] = useState(false);
+  const [conflictModalOpen, setConflictModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const initialRevisionToken = useRef(document.revisionToken);
+
+  const activityMessage = `Loaded at ${formatTimestamp(document.updated)}`;
+
+  const isDirty = draftBody !== document.body;
 
   useEffect(() => {
-    if (document.updated !== lastSyncedUpdated) {
-      setBody(document.body);
-      setLastSyncedUpdated(document.updated);
+    if (initialRevisionToken.current === document.revisionToken) {
+      return;
     }
-  }, [document, lastSyncedUpdated]);
+    if (draftBody === document.body) {
+      initialRevisionToken.current = document.revisionToken;
+      setDraftBody(document.body);
+      setShowRealtimeBanner(false);
+      setErrorMessage(null);
+    } else {
+      setShowRealtimeBanner(true);
+    }
+  }, [document.revisionToken, document.body, draftBody]);
 
   const limitKilobytes = Math.round((MAX_DOCUMENT_SIZE_BYTES / 1024) * 10) / 10;
-  const savedSizeKilobytes =
-    typeof document.sizeBytes === "number"
-      ? Math.round((document.sizeBytes / 1024) * 10) / 10
-      : null;
+  const savedSizeKilobytes = Math.round((document.sizeBytes / 1024) * 10) / 10;
 
-  const isDirty = body !== document.body;
-  const statusLabel = (document.status ?? "draft").toLowerCase();
-  const formattedStatus = statusLabel.slice(0, 1).toUpperCase() + statusLabel.slice(1);
-  const updatedLabel = new Intl.DateTimeFormat(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(document.updated));
+  const statusLabel = document.status.toLowerCase();
+  const updatedLabel = formatTimestamp(document.updated);
 
   const handleSave = async () => {
     if (!isDirty || isSaving) {
@@ -126,18 +149,28 @@ function DocumentEditor({ project, document }: DocumentEditorProps) {
     setIsSaving(true);
     setErrorMessage(null);
     try {
-      await updateDocument({
+      const updatedDoc = await updateDocument({
         documentId: document._id,
-        body,
+        body: draftBody,
+        revisionToken: document.revisionToken,
       });
+      if (updatedDoc) {
+        setShowRealtimeBanner(false);
+        setConflictModalOpen(false);
+      }
       toast.success("Document saved");
     } catch (error) {
-      if (error instanceof Error) {
-        setErrorMessage(error.message);
+      if (error instanceof Error && error.message.includes(CONFLICT_ERROR_MESSAGE)) {
+        setConflictModalOpen(true);
+        setShowRealtimeBanner(true);
+        setErrorMessage(null);
+        toast.warning("Newer changes detected. Reload required.");
       } else {
-        setErrorMessage("Failed to save document. Please try again.");
+        const message =
+          error instanceof Error ? error.message : "Failed to save document. Please try again.";
+        setErrorMessage(message);
+        toast.error("Failed to save document");
       }
-      toast.error("Failed to save document");
     } finally {
       setIsSaving(false);
     }
@@ -148,9 +181,6 @@ function DocumentEditor({ project, document }: DocumentEditorProps) {
       <Card className="border-border/60 bg-muted/10 shadow-sm shadow-primary/5 backdrop-blur">
         <CardHeader className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="space-y-2">
-            <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground/70">
-              Project · {project.name}
-            </span>
             <CardTitle className="text-3xl font-semibold text-foreground">
               {document.title}
             </CardTitle>
@@ -159,52 +189,103 @@ function DocumentEditor({ project, document }: DocumentEditorProps) {
               devices.
             </CardDescription>
           </div>
-          <div className="flex flex-wrap items-center gap-3 md:justify-end">
-            <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
-              {formattedStatus}
-            </span>
-            {savedSizeKilobytes !== null ? (
-              <span className="text-xs text-muted-foreground">
-                Saved size {savedSizeKilobytes} KB / {limitKilobytes} KB
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex flex-wrap items-center gap-3 md:justify-end">
+              <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold uppercase">
+                {statusLabel}
+              </span>
+              {savedSizeKilobytes !== null ? (
+                <span className="text-xs text-muted-foreground">
+                  Saved size {savedSizeKilobytes} KB / {limitKilobytes} KB
+                </span>
+              ) : null}
+              <span className="text-xs text-muted-foreground">Updated {updatedLabel}</span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setShowPreview((previous) => !previous);
+                }}
+                aria-pressed={showPreview}
+              >
+                {showPreview ? (
+                  <>
+                    <FilePenLineIcon className="mr-2 size-4" aria-hidden />
+                    Edit
+                  </>
+                ) : (
+                  <>
+                    <EyeIcon className="mr-2 size-4" aria-hidden />
+                    Preview
+                  </>
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={handleSave}
+                disabled={isSaving || !isDirty}
+              >
+                {isSaving ? "Saving…" : isDirty ? "Save changes" : "Saved"}
+              </Button>
+            </div>
+            {activityMessage ? (
+              <span className="text-xs text-muted-foreground" aria-live="polite">
+                {activityMessage}
               </span>
             ) : null}
-            <span className="text-xs text-muted-foreground">Updated {updatedLabel}</span>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={handleSave}
-              disabled={isSaving || !isDirty}
-            >
-              {isSaving ? "Saving…" : isDirty ? "Save changes" : "Saved"}
-            </Button>
           </div>
         </CardHeader>
       </Card>
 
+      {showRealtimeBanner ? (
+        <RealtimeBanner
+          onDismiss={() => {
+            setShowRealtimeBanner(false);
+          }}
+        />
+      ) : null}
+
       {errorMessage ? <ValidationError message={errorMessage} /> : null}
 
-      <Card className="border-border/60 bg-background/70 shadow-lg shadow-primary/5">
-        <CardContent className="p-0">
+      <div className="border rounded-lg">
+        {showPreview ? (
+          <div className="p-4 text-[0.95rem] leading-relaxed text-foreground">
+            <Streamdown>{draftBody}</Streamdown>
+          </div>
+        ) : (
           <textarea
-            value={body}
+            value={draftBody}
             onChange={(event) => {
-              setBody(event.target.value);
+              const nextBody = event.target.value;
+              setDraftBody(nextBody);
+              setErrorMessage(null);
             }}
-            className="min-h-[60vh] w-full resize-y bg-transparent px-6 py-6 font-mono text-[0.95rem] leading-relaxed text-foreground outline-none focus-visible:outline-none focus-visible:ring-0"
+            className="min-h-[60vh] w-full resize-y bg-transparent p-4 font-mono text-[0.95rem] leading-relaxed text-foreground outline-none focus-visible:outline-none focus-visible:ring-0"
             spellCheck={false}
           />
-        </CardContent>
-      </Card>
+        )}
+      </div>
 
       <p className="text-xs text-muted-foreground">
         Document size is recalculated when you save. If the saved file exceeds {limitKilobytes} KB,
         the save will fail so you can trim the content.
       </p>
 
-      <p className="text-xs text-muted-foreground">
-        Last updated on {updatedLabel}. Unsaved changes are highlighted above.
-      </p>
+      <ConflictModal
+        open={conflictModalOpen}
+        onDismiss={() => {
+          setConflictModalOpen(false);
+        }}
+        onReload={() => {
+          setConflictModalOpen(false);
+          if (typeof window !== "undefined") {
+            window.location.reload();
+          }
+        }}
+      />
     </div>
   );
 }

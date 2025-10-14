@@ -19,5 +19,6 @@ export default defineSchema({
     updated: v.number(),
     sizeBytes: v.number(),
     createdAt: v.number(),
+    revisionToken: v.string(),
   }).index("by_projectId", ["projectId"]),
 });
