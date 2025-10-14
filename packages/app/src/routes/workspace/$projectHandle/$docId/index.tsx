@@ -72,7 +72,7 @@ function DocumentEditorLoader({ handle, docId }: DocumentEditorLoaderProps) {
           baseAppBreadcrumb,
           {
             label: project.name,
-            to: { to: "/projects/$handle", params: { handle: project.handle } },
+            to: { to: "/workspace/$projectHandle", params: { projectHandle: project.handle } },
           },
           { label: document.title },
         ]}

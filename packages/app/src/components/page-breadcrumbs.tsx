@@ -64,7 +64,7 @@ export function PageBreadcrumbs({ items, className }: PageBreadcrumbsProps) {
 
 export const baseAppBreadcrumb: PageBreadcrumb = {
   label: "Memoria",
-  to: { to: "/projects" },
+  to: { to: "/workspace" },
   icon: (
     <span className="flex size-6 items-center justify-center rounded-full bg-primary text-[10px] font-semibold uppercase text-primary-foreground">
       M
