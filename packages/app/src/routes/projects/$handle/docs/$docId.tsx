@@ -1,6 +1,5 @@
-import { SignInButton } from "@clerk/clerk-react";
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { Authenticated, AuthLoading, Unauthenticated, useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { EyeIcon, FilePenLineIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -31,29 +30,7 @@ export const Route = createFileRoute("/projects/$handle/docs/$docId")({
 
 function DocumentEditorPage() {
   const { handle, docId } = Route.useParams();
-
-  return (
-    <div className="space-y-6">
-      <AuthLoading>
-        <div className="space-y-4">
-          <PageBreadcrumbs
-            items={[baseAppBreadcrumb, { label: "Loading…" }]}
-            className="text-xs text-muted-foreground"
-          />
-          <LoadingNotice message="Loading document…" />
-        </div>
-      </AuthLoading>
-      <Authenticated>
-        <DocumentEditorLoader handle={handle} docId={docId as Id<"documents">} />
-      </Authenticated>
-      <Unauthenticated>
-        <div className="space-y-4">
-          <PageBreadcrumbs items={[baseAppBreadcrumb]} className="text-xs text-muted-foreground" />
-          <SignInPrompt />
-        </div>
-      </Unauthenticated>
-    </div>
-  );
+  return <DocumentEditorLoader handle={handle} docId={docId as Id<"documents">} />;
 }
 
 type DocumentEditorProps = {
@@ -77,7 +54,9 @@ function DocumentEditorLoader({ handle, docId }: DocumentEditorLoaderProps) {
           items={[baseAppBreadcrumb, { label: "Loading…" }]}
           className="text-xs text-muted-foreground"
         />
-        <LoadingNotice message="Loading document…" />
+        <div className="rounded-lg border border-dashed px-4 py-12 text-center text-sm text-muted-foreground">
+          Loading document…
+        </div>
       </>
     );
   }
@@ -260,32 +239,6 @@ function DocumentEditor({ document }: DocumentEditorProps) {
           setConflictModalOpen(false);
         }}
       />
-    </div>
-  );
-}
-
-function SignInPrompt() {
-  return (
-    <div className="flex flex-col items-start gap-3 rounded-lg border px-4 py-6">
-      <p className="text-sm text-muted-foreground">
-        Sign in to open and edit documents in this project.
-      </p>
-      <SignInButton mode="modal">
-        <button
-          type="button"
-          className="rounded-md border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted"
-        >
-          Sign in
-        </button>
-      </SignInButton>
-    </div>
-  );
-}
-
-function LoadingNotice({ message }: { message: string }) {
-  return (
-    <div className="rounded-lg border border-dashed px-4 py-12 text-center text-sm text-muted-foreground">
-      {message}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { ClerkProvider, useAuth } from "@clerk/clerk-react";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
-import { ConvexReactClient } from "convex/react";
+import { ConvexReactClient, useConvexAuth } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
@@ -23,12 +23,27 @@ if (!CONVEX_URL) {
 
 const convex = new ConvexReactClient(CONVEX_URL);
 
-const router = createRouter({ routeTree });
+const router = createRouter({
+  routeTree,
+  context: {
+    auth: undefined!,
+  },
+});
 
 declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router;
   }
+}
+
+function InnerApp() {
+  const auth = useConvexAuth();
+  return (
+    <>
+      <RouterProvider router={router} context={{ auth }} />
+      <Toaster />
+    </>
+  );
 }
 
 // Render the app
@@ -45,8 +60,7 @@ if (!rootElement.innerHTML) {
       <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
         <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
           <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-            <RouterProvider router={router} />
-            <Toaster />
+            <InnerApp />
           </ThemeProvider>
         </ConvexProviderWithClerk>
       </ClerkProvider>

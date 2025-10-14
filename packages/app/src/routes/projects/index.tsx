@@ -1,6 +1,5 @@
-import { SignInButton } from "@clerk/clerk-react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Authenticated, AuthLoading, Unauthenticated, useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/empty-state";
@@ -30,15 +29,7 @@ function ProjectsPage() {
   return (
     <div className="space-y-6">
       <PageBreadcrumbs items={[baseAppBreadcrumb]} className="text-xs text-muted-foreground" />
-      <AuthLoading>
-        <LoadingNotice message="Preparing your workspace…" />
-      </AuthLoading>
-      <Authenticated>
-        <ProjectsContent />
-      </Authenticated>
-      <Unauthenticated>
-        <SignInPrompt />
-      </Unauthenticated>
+      <ProjectsContent />
     </div>
   );
 }
@@ -254,31 +245,5 @@ function CreateProjectDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function SignInPrompt() {
-  return (
-    <div className="flex flex-col items-start gap-3 rounded-lg border px-4 py-6">
-      <p className="text-sm text-muted-foreground">
-        Sign in with your Clerk account to create projects and start writing.
-      </p>
-      <SignInButton mode="modal">
-        <button
-          type="button"
-          className="rounded-md border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted"
-        >
-          Sign in
-        </button>
-      </SignInButton>
-    </div>
-  );
-}
-
-function LoadingNotice({ message }: { message: string }) {
-  return (
-    <div className="rounded-lg border border-dashed px-4 py-12 text-center text-sm text-muted-foreground">
-      {message}
-    </div>
   );
 }

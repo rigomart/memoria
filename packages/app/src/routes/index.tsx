@@ -6,17 +6,25 @@ import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
   component: HomeRoute,
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      redirect: (search.redirect as string | undefined) ?? undefined,
+    };
+  },
 });
 
 function HomeRoute() {
   const { isAuthenticated, isLoading } = useConvexAuth();
   const navigate = Route.useNavigate();
+  const { redirect } = Route.useSearch();
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      navigate({ to: "/projects" });
+      // Redirect to the original destination if provided, otherwise go to projects
+      const destination = redirect ?? "/projects";
+      navigate({ to: destination, search: { redirect: undefined } });
     }
-  }, [isAuthenticated, isLoading, navigate]);
+  }, [isAuthenticated, isLoading, navigate, redirect]);
 
   if (isLoading) {
     return (

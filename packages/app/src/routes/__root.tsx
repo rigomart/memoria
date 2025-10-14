@@ -1,6 +1,11 @@
-import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import type { useConvexAuth } from "convex/react";
 import { Header } from "@/components/header";
+
+interface RouterContext {
+  auth: ReturnType<typeof useConvexAuth>;
+}
 
 const RootLayout = () => (
   <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -12,6 +17,6 @@ const RootLayout = () => (
   </div>
 );
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootLayout,
 });
