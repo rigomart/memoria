@@ -58,7 +58,7 @@ function HomeRoute() {
       <main className="flex flex-1 items-stretch">
         <section className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-4 py-12 sm:px-6 sm:py-20">
           <div className="mx-auto max-w-2xl space-y-6 text-center">
-            <span className="inline-flex items-center rounded-full border border-border/60 bg-background/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-muted-foreground shadow-sm">
+            <span className="inline-flex items-center rounded-full border border-border/60 bg-background/70 px-3 py-1 text-xs text-muted-foreground shadow-sm">
               Context Your AI Agent Can Find
             </span>
             <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
@@ -94,10 +94,7 @@ function HomeRoute() {
             <div className="grid gap-4 sm:grid-cols-3 sm:gap-6">
               {/* Step 1: Draft with AI */}
               <div className="group relative">
-                <div
-                  className="rounded-xl border border-border/60 bg-card/50 p-6 backdrop-blur-sm transition-all hover:border-border hover:bg-card/80"
-                  style={{ boxShadow: "var(--shadow-s)" }}
-                >
+                <div className="rounded-xl border border-border/60 bg-card/50 p-6 backdrop-blur-sm transition-all hover:border-border hover:bg-card/80 shadow-md">
                   <div className="mb-4 flex size-12 items-center justify-center rounded-lg bg-primary/10">
                     <Sparkles className="size-6 text-primary" />
                   </div>
@@ -114,10 +111,7 @@ function HomeRoute() {
 
               {/* Step 2: Store in Memoria */}
               <div className="group relative">
-                <div
-                  className="rounded-xl border border-border/60 bg-card/50 p-6 backdrop-blur-sm transition-all hover:border-border hover:bg-card/80"
-                  style={{ boxShadow: "var(--shadow-s)" }}
-                >
+                <div className="rounded-xl border border-border/60 bg-card/50 p-6 backdrop-blur-sm transition-all hover:border-border hover:bg-card/80 shadow-md">
                   <div className="mb-4 flex size-12 items-center justify-center rounded-lg bg-primary/10">
                     <Brain className="size-6 text-primary" />
                   </div>
@@ -134,10 +128,7 @@ function HomeRoute() {
 
               {/* Step 3: Agent Pulls Automatically */}
               <div className="group relative">
-                <div
-                  className="rounded-xl border border-border/60 bg-card/50 p-6 backdrop-blur-sm transition-all hover:border-border hover:bg-card/80"
-                  style={{ boxShadow: "var(--shadow-s)" }}
-                >
+                <div className="rounded-xl border border-border/60 bg-card/50 p-6 backdrop-blur-sm transition-all hover:border-border hover:bg-card/80 shadow-md">
                   <div className="mb-4 flex size-12 items-center justify-center rounded-lg bg-primary/10">
                     <Zap className="size-6 text-primary" />
                   </div>
