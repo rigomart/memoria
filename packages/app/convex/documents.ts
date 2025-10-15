@@ -59,7 +59,7 @@ export const updateDocument = mutation({
     title: v.string(),
     tags: v.array(v.string()),
     status: v.string(),
-    revisionToken: v.optional(v.string()),
+    revisionToken: v.string(),
   },
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx);
