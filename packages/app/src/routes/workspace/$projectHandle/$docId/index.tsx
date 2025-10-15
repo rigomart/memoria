@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
 import { Button } from "@/components/ui/button";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader } from "@/components/ui/card";
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { ConflictModal } from "./-components/conflict-modal";
@@ -62,6 +62,9 @@ function DocumentEditorLoader({ docId }: DocumentEditorLoaderProps) {
 function DocumentEditor({ document }: DocumentEditorProps) {
   const updateDocument = useMutation(api.documents.updateDocument);
   const [draftBody, setDraftBody] = useState(document.body);
+  const [draftTitle, setDraftTitle] = useState(document.title);
+  const [draftTags, setDraftTags] = useState(document.tags.join(", "));
+  const [draftStatus, setDraftStatus] = useState(document.status);
   const [isSaving, setIsSaving] = useState(false);
   const [showPreview, setShowPreview] = useState(false); // TODO: not necessary. We should change how we handle preview.
   const [conflictModalOpen, setConflictModalOpen] = useState(false);
@@ -69,15 +72,24 @@ function DocumentEditor({ document }: DocumentEditorProps) {
 
   const activityMessage = `Loaded at ${formatTimestamp(document.updated)}`;
 
-  const isDirty = draftBody !== document.body;
+  const isDirty =
+    draftBody !== document.body ||
+    draftTitle.trim() !== document.title ||
+    draftTags !== document.tags.join(", ") ||
+    draftStatus.trim() !== document.status;
 
   useEffect(() => {
     if (localRevisionToken.current === document.revisionToken) {
       return;
     }
 
+    // Update local state with remote changes when a conflict is detected
+    setDraftBody(document.body);
+    setDraftTitle(document.title);
+    setDraftTags(document.tags.join(", "));
+    setDraftStatus(document.status);
     setConflictModalOpen(true);
-  }, [document.revisionToken]);
+  }, [document.revisionToken, document.body, document.title, document.tags, document.status]);
 
   const limitKilobytes = Math.round((MAX_DOCUMENT_SIZE_BYTES / 1024) * 10) / 10;
   const savedSizeKilobytes = Math.round((document.sizeBytes / 1024) * 10) / 10;
@@ -91,9 +103,17 @@ function DocumentEditor({ document }: DocumentEditorProps) {
     }
     setIsSaving(true);
     try {
+      const tagsArray = draftTags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter((tag) => tag.length > 0);
+
       const updatedDocument = await updateDocument({
         documentId: document._id,
         body: draftBody,
+        title: draftTitle,
+        tags: tagsArray,
+        status: draftStatus,
         revisionToken: document.revisionToken,
       });
 
@@ -112,15 +132,59 @@ function DocumentEditor({ document }: DocumentEditorProps) {
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
       <Card className="border-border/60 bg-muted/10 shadow-sm shadow-primary/5 backdrop-blur">
-        <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-1.5">
-            <CardTitle className="text-2xl font-semibold text-foreground">
-              {document.title}
-            </CardTitle>
-            <CardDescription className="text-xs text-muted-foreground">
-              Make edits below and save when you are ready. Your changes sync instantly across
-              devices.
-            </CardDescription>
+        <CardHeader className="flex flex-col gap-4">
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <label htmlFor="title" className="text-sm font-medium text-foreground">
+                Title
+              </label>
+              <input
+                id="title"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background focus:border-primary focus:ring-2 focus:ring-primary/40"
+                value={draftTitle}
+                onChange={(event) => {
+                  setDraftTitle(event.target.value);
+                }}
+                disabled={isSaving}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label htmlFor="tags" className="text-sm font-medium text-foreground">
+                Tags
+              </label>
+              <input
+                id="tags"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background focus:border-primary focus:ring-2 focus:ring-primary/40"
+                placeholder="e.g. important, meeting, notes"
+                value={draftTags}
+                onChange={(event) => {
+                  setDraftTags(event.target.value);
+                }}
+                disabled={isSaving}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label htmlFor="status" className="text-sm font-medium text-foreground">
+                Status
+              </label>
+              <select
+                id="status"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background focus:border-primary focus:ring-2 focus:ring-primary/40"
+                value={draftStatus}
+                onChange={(event) => {
+                  setDraftStatus(event.target.value);
+                }}
+                disabled={isSaving}
+              >
+                <option value="draft">Draft</option>
+                <option value="in-progress">In Progress</option>
+                <option value="review">Review</option>
+                <option value="published">Published</option>
+                <option value="archived">Archived</option>
+              </select>
+            </div>
           </div>
           <div className="flex flex-col items-start gap-3 text-xs text-muted-foreground md:items-end">
             <div className="flex flex-wrap items-center gap-2">

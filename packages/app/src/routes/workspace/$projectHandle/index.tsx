@@ -240,7 +240,7 @@ function CreateDocumentDialog({
         <DialogHeader>
           <DialogTitle>New document</DialogTitle>
           <DialogDescription>
-            Optionally give your document a title. You can edit the frontmatter later.
+            Optionally give your document a title. You can edit all metadata later.
           </DialogDescription>
         </DialogHeader>
 

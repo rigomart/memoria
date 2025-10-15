@@ -12,7 +12,7 @@ function HomeRoute() {
       <h1 className="text-2xl font-semibold text-foreground">Welcome to Memoria</h1>
       <p className="text-sm text-muted-foreground">
         Sign in to create projects, manage documents, and capture knowledge with Markdown and
-        frontmatter validation.
+        metadata management.
       </p>
       <SignInButton mode="modal">
         <Button type="button">Sign in</Button>
