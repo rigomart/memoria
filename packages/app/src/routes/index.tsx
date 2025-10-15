@@ -1,7 +1,7 @@
 import { SignInButton, SignUpButton } from "@clerk/clerk-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
-import { Brain } from "lucide-react";
+import { ArrowRight, Brain, RefreshCw, Sparkles, Zap } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -56,46 +56,115 @@ function HomeRoute() {
         </div>
       </header>
       <main className="flex flex-1 items-stretch">
-        <section className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-12 sm:px-6">
-          <div className="max-w-2xl space-y-4">
+        <section className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-4 py-12 sm:px-6 sm:py-20">
+          <div className="mx-auto max-w-2xl space-y-6 text-center">
             <span className="inline-flex items-center rounded-full border border-border/60 bg-background/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-muted-foreground shadow-sm">
               Context Your AI Agent Can Find
             </span>
-            <h1 className="text-3xl font-semibold tracking-tight sm:text-[34px]">
+            <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
               Stop pasting specs into every chat
             </h1>
-            <p className="text-sm text-muted-foreground sm:text-base">
+            <p className="text-base text-muted-foreground sm:text-lg">
               Use AI to draft project plans, specs, and conventions quickly. Store them in Memoria,
-              and your AI agent pulls exactly what it needs automatically—no more context management
-              overhead.
+              and your AI agent pulls exactly what it needs automatically.
             </p>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
               <Unauthenticated>
                 <SignUpButton mode="modal">
-                  <Button type="button">Start capturing</Button>
+                  <Button type="button" size="lg">
+                    Start capturing
+                  </Button>
                 </SignUpButton>
                 <SignInButton mode="modal">
-                  <Button type="button" variant="outline">
-                    I already use Memoria
+                  <Button type="button" variant="outline" size="lg">
+                    Sign in
                   </Button>
                 </SignInButton>
               </Unauthenticated>
               <Authenticated>
-                <Button asChild type="button">
+                <Button asChild type="button" size="lg">
                   <Link to="/workspace">Continue in your workspace</Link>
                 </Button>
               </Authenticated>
             </div>
           </div>
-          <div className="grid gap-4 sm:grid-cols-3">
+
+          {/* Flow Diagram */}
+          <div className="relative mx-auto w-full max-w-4xl">
+            <div className="grid gap-4 sm:grid-cols-3 sm:gap-6">
+              {/* Step 1: Draft with AI */}
+              <div className="group relative">
+                <div
+                  className="rounded-xl border border-border/60 bg-card/50 p-6 backdrop-blur-sm transition-all hover:border-border hover:bg-card/80"
+                  style={{ boxShadow: "var(--shadow-s)" }}
+                >
+                  <div className="mb-4 flex size-12 items-center justify-center rounded-lg bg-primary/10">
+                    <Sparkles className="size-6 text-primary" />
+                  </div>
+                  <h3 className="text-lg font-semibold">Draft with AI</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Create specs and plans quickly using AI assistance
+                  </p>
+                </div>
+                {/* Arrow */}
+                <div className="absolute -right-6 top-1/2 z-10 hidden -translate-y-1/2 sm:block">
+                  <ArrowRight className="size-6 text-muted-foreground/40" />
+                </div>
+              </div>
+
+              {/* Step 2: Store in Memoria */}
+              <div className="group relative">
+                <div
+                  className="rounded-xl border border-border/60 bg-card/50 p-6 backdrop-blur-sm transition-all hover:border-border hover:bg-card/80"
+                  style={{ boxShadow: "var(--shadow-s)" }}
+                >
+                  <div className="mb-4 flex size-12 items-center justify-center rounded-lg bg-primary/10">
+                    <Brain className="size-6 text-primary" />
+                  </div>
+                  <h3 className="text-lg font-semibold">Store Once</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Save to Memoria with structured metadata
+                  </p>
+                </div>
+                {/* Arrow */}
+                <div className="absolute -right-6 top-1/2 z-10 hidden -translate-y-1/2 sm:block">
+                  <ArrowRight className="size-6 text-muted-foreground/40" />
+                </div>
+              </div>
+
+              {/* Step 3: Agent Pulls Automatically */}
+              <div className="group relative">
+                <div
+                  className="rounded-xl border border-border/60 bg-card/50 p-6 backdrop-blur-sm transition-all hover:border-border hover:bg-card/80"
+                  style={{ boxShadow: "var(--shadow-s)" }}
+                >
+                  <div className="mb-4 flex size-12 items-center justify-center rounded-lg bg-primary/10">
+                    <Zap className="size-6 text-primary" />
+                  </div>
+                  <h3 className="text-lg font-semibold">Agent Pulls</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    AI finds context automatically via MCP
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Simplified Feature Highlights */}
+          <div className="mx-auto grid w-full max-w-3xl gap-3 sm:grid-cols-3">
             {features.map((feature) => (
-              <article
+              <div
                 key={feature.title}
-                className="rounded-lg border border-border/60 bg-background/80 p-4 shadow-sm backdrop-blur-sm"
+                className="group flex items-center gap-3 rounded-lg border border-border/40 bg-card/30 p-4 backdrop-blur-sm transition-all hover:border-border/60 hover:bg-card/50"
               >
-                <h2 className="text-base font-medium text-card-foreground">{feature.title}</h2>
-                <p className="mt-2 text-sm text-muted-foreground">{feature.description}</p>
-              </article>
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted/50">
+                  <feature.icon className="size-5 text-foreground/70" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-sm font-medium">{feature.title}</h3>
+                  <p className="text-xs text-muted-foreground">{feature.subtitle}</p>
+                </div>
+              </div>
             ))}
           </div>
         </section>
@@ -111,18 +180,18 @@ function HomeRoute() {
 
 const features = [
   {
-    title: "AI-Assisted Writing",
-    description:
-      "Draft specs, PRDs, and conventions with AI help. Templates and smart suggestions make documentation fast without taking over control.",
+    icon: Sparkles,
+    title: "AI-Assisted",
+    subtitle: "Templates & smart drafts",
   },
   {
-    title: "Automatic Context",
-    description:
-      "AI agents pull relevant docs on their own through MCP—no more manual copy-paste into prompts.",
+    icon: Zap,
+    title: "MCP Integration",
+    subtitle: "Works with any AI agent",
   },
   {
-    title: "Living Documentation",
-    description:
-      "Update specs as you go with AI assistance. Keep decisions and conventions current alongside active work.",
+    icon: RefreshCw,
+    title: "Always Current",
+    subtitle: "Living documentation",
   },
 ];
