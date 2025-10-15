@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -78,8 +77,6 @@ function DocumentEditor({ document }: DocumentEditorProps) {
   const [conflictModalOpen, setConflictModalOpen] = useState(false);
   const localRevisionToken = useRef(document.revisionToken);
 
-  const activityMessage = `Loaded at ${formatTimestamp(document.updated)}`;
-
   const normalizeTags = (tags: string[]) =>
     tags.map((tag) => tag.trim()).filter((tag) => tag.length > 0);
 
@@ -146,13 +143,6 @@ function DocumentEditor({ document }: DocumentEditorProps) {
   const limitKilobytes = Math.round((MAX_DOCUMENT_SIZE_BYTES / 1024) * 10) / 10;
   const savedSizeKilobytes = Math.round((document.sizeBytes / 1024) * 10) / 10;
 
-  const formatStatusLabel = (value: string) =>
-    value
-      .split("-")
-      .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
-      .join(" ");
-
-  const statusLabel = formatStatusLabel(draftStatus);
   const updatedLabel = formatTimestamp(document.updated);
 
   const handleSave = async () => {
@@ -184,53 +174,52 @@ function DocumentEditor({ document }: DocumentEditorProps) {
   };
 
   return (
-    <div className="mx-auto flex w-full flex-col gap-5">
-      <Card className="border-border/40 bg-background/60 backdrop-blur-md">
-        <CardContent className="grid gap-4 px-5 py-4 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <label htmlFor="title" className="text-sm font-medium text-foreground">
+    <div className="mx-auto flex w-full flex-col gap-4">
+      <div className="rounded-lg border border-border/40 bg-background/60 backdrop-blur-md">
+        <div className="grid gap-3 px-4 py-3 lg:grid-cols-[1fr_2fr_1fr] md:grid-cols-1">
+          <div className="space-y-2 lg:space-y-3">
+            <div className="space-y-1">
+              <label htmlFor="title" className="text-xs font-medium text-foreground">
                 Title
               </label>
               <input
                 id="title"
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background focus:border-primary focus:ring-2 focus:ring-primary/40"
+                className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm outline-none ring-offset-background focus:border-primary focus:ring-2 focus:ring-primary/40"
                 value={draftTitle}
                 onChange={(event) => {
                   setDraftTitle(event.target.value);
                 }}
                 disabled={isSaving}
               />
-              <p className="text-xs text-muted-foreground">
-                Shown in the project navigator and document listings.
-              </p>
             </div>
+          </div>
 
-            <div className="space-y-3">
-              <label htmlFor="tag-input" className="text-sm font-medium text-foreground">
+          <div className="space-y-2 lg:space-y-3">
+            <div className="space-y-1">
+              <label htmlFor="tag-input" className="text-xs font-medium text-foreground">
                 Tags
               </label>
-              <div className="rounded-lg border border-border/60 bg-background/70 px-3 py-2">
-                <div className="flex flex-wrap items-center gap-2 text-sm">
+              <div className="rounded-md border border-border/60 bg-background/70 px-3 py-1.5">
+                <div className="flex flex-wrap items-center gap-1.5 text-sm">
                   {draftTags.map((tag, index) => (
                     <button
                       key={tag}
                       type="button"
-                      className="inline-flex items-center gap-1 rounded-full border border-border/50 bg-background/80 px-2 py-1 text-xs font-medium text-foreground transition hover:border-primary/60 hover:bg-primary/10"
+                      className="inline-flex items-center gap-1 rounded-full border border-border/50 bg-background/80 px-2 py-0.5 text-xs font-medium text-foreground transition hover:border-primary/60 hover:bg-primary/10"
                       onClick={() => {
                         removeTagAtIndex(index);
                       }}
                       disabled={isSaving}
                     >
                       <span>{tag}</span>
-                      <XIcon className="size-3.5" aria-hidden />
+                      <XIcon className="size-3" aria-hidden />
                       <span className="sr-only">Remove {tag}</span>
                     </button>
                   ))}
                   <input
                     id="tag-input"
-                    className="min-w-[120px] flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/70"
-                    placeholder={draftTags.length === 0 ? "Add a tag…" : "Add another tag"}
+                    className="min-w-[100px] flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/70"
+                    placeholder={draftTags.length === 0 ? "Add tag…" : ""}
                     value={pendingTag}
                     onChange={(event) => {
                       setPendingTag(event.target.value);
@@ -255,16 +244,13 @@ function DocumentEditor({ document }: DocumentEditorProps) {
                   />
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Press Enter to save a tag. Suggestions help keep naming consistent.
-              </p>
               {availableSuggestions.length > 0 ? (
-                <div className="flex flex-wrap gap-2 text-xs">
+                <div className="flex flex-wrap gap-1.5">
                   {availableSuggestions.map((suggestion) => (
                     <button
                       key={suggestion}
                       type="button"
-                      className="rounded-full border border-border/40 bg-background/80 px-3 py-1 font-medium text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
+                      className="rounded-full border border-border/40 bg-background/80 px-2 py-0.5 text-xs font-medium text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
                       onClick={() => {
                         addTag(suggestion);
                       }}
@@ -278,9 +264,9 @@ function DocumentEditor({ document }: DocumentEditorProps) {
             </div>
           </div>
 
-          <aside className="space-y-4 rounded-lg border border-border/50 bg-background/70 p-4">
-            <div className="space-y-2">
-              <label htmlFor="status" className="text-sm font-medium text-foreground">
+          <aside className="space-y-2 rounded-md border border-border/50 bg-background/70 p-3">
+            <div className="space-y-1.5">
+              <label htmlFor="status" className="text-xs font-medium text-foreground">
                 Status
               </label>
               <Select
@@ -290,7 +276,7 @@ function DocumentEditor({ document }: DocumentEditorProps) {
                 }}
                 disabled={isSaving}
               >
-                <SelectTrigger id="status" className="w-full">
+                <SelectTrigger id="status" className="w-full h-8">
                   <SelectValue placeholder="Choose status" />
                 </SelectTrigger>
                 <SelectContent align="end">
@@ -303,8 +289,8 @@ function DocumentEditor({ document }: DocumentEditorProps) {
               </Select>
             </div>
           </aside>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <Tabs defaultValue="edit" className="gap-3 max-w-6xl mx-auto w-full">
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/60 bg-background/70 px-3 py-2">
