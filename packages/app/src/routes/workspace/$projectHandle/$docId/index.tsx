@@ -25,9 +25,6 @@ function formatTimestamp(timestamp: number) {
 
 export const Route = createFileRoute("/workspace/$projectHandle/$docId/")({
   component: DocumentEditorPage,
-  beforeLoad: ({ context, location }) => {
-    context.breadcrumb = { label: "Document", path: location.pathname };
-  },
 });
 
 function DocumentEditorPage() {

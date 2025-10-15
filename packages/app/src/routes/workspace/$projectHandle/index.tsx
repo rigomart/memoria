@@ -22,9 +22,6 @@ const DOCUMENT_LIMIT = 5;
 
 export const Route = createFileRoute("/workspace/$projectHandle/")({
   component: ProjectDocumentsPage,
-  beforeLoad: ({ context, location }) => {
-    context.breadcrumb = { label: "Project", path: location.pathname };
-  },
 });
 
 function ProjectDocumentsPage() {

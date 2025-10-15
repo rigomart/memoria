@@ -76,4 +76,6 @@
 ## Guardrails & Future-proofing (kept light)
 
 * **No chunking/anchors in v1.** Contracts already future-safe (MCP `get_document` delivers full body with size caps).
+* Explore a dedicated **`versions`** collection for storing immutable document bodies so the primary `documents` table can stay metadata-focused while retaining multiple revisions.
+* Harden the workspace tree query (Convex + router caching) so breadcrumbs continue to work as project/document counts grow and clients can progressively render partial data.
 * Later upgrades: per-section anchors/chunking, semantic re-rank, folder import/export, multi-user, richer version history—all without breaking v1 MCP/tool shapes.
