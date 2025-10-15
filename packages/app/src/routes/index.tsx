@@ -1,6 +1,10 @@
-import { SignInButton } from "@clerk/clerk-react";
-import { createFileRoute } from "@tanstack/react-router";
+import { SignInButton, SignUpButton } from "@clerk/clerk-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
+import { ArrowRight, Brain, RefreshCw, Sparkles, Zap } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 
 export const Route = createFileRoute("/")({
   component: HomeRoute,
@@ -8,15 +12,186 @@ export const Route = createFileRoute("/")({
 
 function HomeRoute() {
   return (
-    <div className="flex flex-col gap-4 rounded-lg border px-6 py-8">
-      <h1 className="text-2xl font-semibold text-foreground">Welcome to Memoria</h1>
-      <p className="text-sm text-muted-foreground">
-        Sign in to create projects, manage documents, and capture knowledge with Markdown and
-        metadata management.
-      </p>
-      <SignInButton mode="modal">
-        <Button type="button">Sign in</Button>
-      </SignInButton>
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-background text-foreground">
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.28),_transparent_55%),_radial-gradient(circle_at_bottom,_rgba(16,185,129,0.22),_transparent_60%),_repeating-linear-gradient(90deg,_rgba(148,163,184,0.12)_0,_rgba(148,163,184,0.12)_1px,transparent_1px,transparent_120px),_repeating-linear-gradient(0deg,_rgba(148,163,184,0.12)_0,_rgba(148,163,184,0.12)_1px,transparent_1px,transparent_120px)]" />
+      <header className="border-b border-border/70 bg-gradient-to-b from-background/95 via-background/90 to-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/75">
+        <div className="mx-auto flex h-12 w-full max-w-5xl items-center justify-between gap-6 px-4">
+          <Link
+            to="/"
+            className="flex items-center gap-2 rounded-full bg-primary/10 px-2 py-1 text-sm font-medium text-primary"
+          >
+            <span className="flex items-center gap-2">
+              <span className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">
+                <Brain className="size-5" />
+              </span>
+              <span>Memoria</span>
+            </span>
+          </Link>
+          <nav className="flex items-center gap-2 text-xs sm:text-sm">
+            <AuthLoading>
+              <span className="flex size-9 items-center justify-center rounded-full border border-border/60 bg-muted/30">
+                <Spinner className="size-4 text-muted-foreground" />
+              </span>
+            </AuthLoading>
+            <Unauthenticated>
+              <div className="flex items-center gap-2">
+                <SignInButton mode="modal">
+                  <Button type="button" variant="ghost" size="sm">
+                    Sign in
+                  </Button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <Button type="button" size="sm">
+                    Create account
+                  </Button>
+                </SignUpButton>
+              </div>
+            </Unauthenticated>
+            <Authenticated>
+              <Button asChild type="button" size="sm">
+                <Link to="/workspace">Go to workspace</Link>
+              </Button>
+            </Authenticated>
+          </nav>
+        </div>
+      </header>
+      <main className="flex flex-1 items-stretch">
+        <section className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-4 py-12 sm:px-6 sm:py-20">
+          <div className="mx-auto max-w-2xl space-y-6 text-center">
+            <span className="inline-flex items-center rounded-full border border-border/60 bg-background/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-muted-foreground shadow-sm">
+              Context Your AI Agent Can Find
+            </span>
+            <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+              Stop pasting specs into every chat
+            </h1>
+            <p className="text-base text-muted-foreground sm:text-lg">
+              Use AI to draft project plans, specs, and conventions quickly. Store them in Memoria,
+              and your AI agent pulls exactly what it needs automatically.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+              <Unauthenticated>
+                <SignUpButton mode="modal">
+                  <Button type="button" size="lg">
+                    Start capturing
+                  </Button>
+                </SignUpButton>
+                <SignInButton mode="modal">
+                  <Button type="button" variant="outline" size="lg">
+                    Sign in
+                  </Button>
+                </SignInButton>
+              </Unauthenticated>
+              <Authenticated>
+                <Button asChild type="button" size="lg">
+                  <Link to="/workspace">Continue in your workspace</Link>
+                </Button>
+              </Authenticated>
+            </div>
+          </div>
+
+          {/* Flow Diagram */}
+          <div className="relative mx-auto w-full max-w-4xl">
+            <div className="grid gap-4 sm:grid-cols-3 sm:gap-6">
+              {/* Step 1: Draft with AI */}
+              <div className="group relative">
+                <div
+                  className="rounded-xl border border-border/60 bg-card/50 p-6 backdrop-blur-sm transition-all hover:border-border hover:bg-card/80"
+                  style={{ boxShadow: "var(--shadow-s)" }}
+                >
+                  <div className="mb-4 flex size-12 items-center justify-center rounded-lg bg-primary/10">
+                    <Sparkles className="size-6 text-primary" />
+                  </div>
+                  <h3 className="text-lg font-semibold">Draft with AI</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Create specs and plans quickly using AI assistance
+                  </p>
+                </div>
+                {/* Arrow */}
+                <div className="absolute -right-6 top-1/2 z-10 hidden -translate-y-1/2 sm:block">
+                  <ArrowRight className="size-6 text-muted-foreground/40" />
+                </div>
+              </div>
+
+              {/* Step 2: Store in Memoria */}
+              <div className="group relative">
+                <div
+                  className="rounded-xl border border-border/60 bg-card/50 p-6 backdrop-blur-sm transition-all hover:border-border hover:bg-card/80"
+                  style={{ boxShadow: "var(--shadow-s)" }}
+                >
+                  <div className="mb-4 flex size-12 items-center justify-center rounded-lg bg-primary/10">
+                    <Brain className="size-6 text-primary" />
+                  </div>
+                  <h3 className="text-lg font-semibold">Store Once</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Save to Memoria with structured metadata
+                  </p>
+                </div>
+                {/* Arrow */}
+                <div className="absolute -right-6 top-1/2 z-10 hidden -translate-y-1/2 sm:block">
+                  <ArrowRight className="size-6 text-muted-foreground/40" />
+                </div>
+              </div>
+
+              {/* Step 3: Agent Pulls Automatically */}
+              <div className="group relative">
+                <div
+                  className="rounded-xl border border-border/60 bg-card/50 p-6 backdrop-blur-sm transition-all hover:border-border hover:bg-card/80"
+                  style={{ boxShadow: "var(--shadow-s)" }}
+                >
+                  <div className="mb-4 flex size-12 items-center justify-center rounded-lg bg-primary/10">
+                    <Zap className="size-6 text-primary" />
+                  </div>
+                  <h3 className="text-lg font-semibold">Agent Pulls</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    AI finds context automatically via MCP
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Simplified Feature Highlights */}
+          <div className="mx-auto grid w-full max-w-3xl gap-3 sm:grid-cols-3">
+            {features.map((feature) => (
+              <div
+                key={feature.title}
+                className="group flex items-center gap-3 rounded-lg border border-border/40 bg-card/30 p-4 backdrop-blur-sm transition-all hover:border-border/60 hover:bg-card/50"
+              >
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted/50">
+                  <feature.icon className="size-5 text-foreground/70" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-sm font-medium">{feature.title}</h3>
+                  <p className="text-xs text-muted-foreground">{feature.subtitle}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
+      <footer className="border-t border-border/70 bg-background/95">
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-2 px-4 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+          <span>Built for developers who work with AI agents.</span>
+        </div>
+      </footer>
     </div>
   );
 }
+
+const features = [
+  {
+    icon: Sparkles,
+    title: "AI-Assisted",
+    subtitle: "Templates & smart drafts",
+  },
+  {
+    icon: Zap,
+    title: "MCP Integration",
+    subtitle: "Works with any AI agent",
+  },
+  {
+    icon: RefreshCw,
+    title: "Always Current",
+    subtitle: "Living documentation",
+  },
+];
