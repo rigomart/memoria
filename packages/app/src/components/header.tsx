@@ -8,7 +8,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-20 border-b border-border/70 bg-gradient-to-b from-background/95 via-background/90 to-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/75">
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-6 px-4">
-        <Link to="/projects" className="flex items-center gap-3 text-foreground">
+        <Link to="/workspace" className="flex items-center gap-3 text-foreground">
           <span className="flex size-9 items-center justify-center rounded-full bg-primary text-base font-semibold text-primary-foreground shadow-sm shadow-primary/40">
             M
           </span>

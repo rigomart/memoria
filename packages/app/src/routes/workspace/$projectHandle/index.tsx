@@ -1,10 +1,8 @@
-import { SignInButton } from "@clerk/clerk-react";
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
-import { Authenticated, AuthLoading, Unauthenticated, useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/empty-state";
-import { baseAppBreadcrumb, PageBreadcrumbs } from "@/components/page-breadcrumbs";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,41 +14,19 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ValidationError } from "@/components/validation-error";
-import { api } from "../../../../convex/_generated/api";
-import type { Doc, Id } from "../../../../convex/_generated/dataModel";
+import { api } from "@/convex/_generated/api";
+import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { DocumentListItem } from "./-components/document-list-item";
 
 const DOCUMENT_LIMIT = 5;
 
-export const Route = createFileRoute("/projects/$handle/")({
+export const Route = createFileRoute("/workspace/$projectHandle/")({
   component: ProjectDocumentsPage,
 });
 
 function ProjectDocumentsPage() {
-  const { handle } = Route.useParams();
-
-  return (
-    <div className="space-y-6">
-      <AuthLoading>
-        <div className="space-y-4">
-          <PageBreadcrumbs
-            items={[baseAppBreadcrumb, { label: "Loading…" }]}
-            className="text-xs text-muted-foreground"
-          />
-          <LoadingNotice message="Loading project…" />
-        </div>
-      </AuthLoading>
-      <Authenticated>
-        <ProjectDocumentsLoader handle={handle} />
-      </Authenticated>
-      <Unauthenticated>
-        <div className="space-y-4">
-          <PageBreadcrumbs items={[baseAppBreadcrumb]} className="text-xs text-muted-foreground" />
-          <SignInPrompt />
-        </div>
-      </Unauthenticated>
-    </div>
-  );
+  const { projectHandle } = Route.useParams();
+  return <ProjectDocumentsLoader handle={projectHandle} />;
 }
 
 type ProjectDocumentsLoaderProps = {
@@ -62,13 +38,9 @@ function ProjectDocumentsLoader({ handle }: ProjectDocumentsLoaderProps) {
 
   if (project === undefined) {
     return (
-      <>
-        <PageBreadcrumbs
-          items={[baseAppBreadcrumb, { label: "Loading…" }]}
-          className="text-xs text-muted-foreground"
-        />
-        <LoadingNotice message="Loading project…" />
-      </>
+      <div className="rounded-lg border border-dashed px-4 py-12 text-center text-sm text-muted-foreground">
+        Loading project…
+      </div>
     );
   }
 
@@ -76,15 +48,7 @@ function ProjectDocumentsLoader({ handle }: ProjectDocumentsLoaderProps) {
     throw notFound();
   }
 
-  return (
-    <>
-      <PageBreadcrumbs
-        items={[baseAppBreadcrumb, { label: project.name }]}
-        className="text-xs text-muted-foreground"
-      />
-      <ProjectDocumentsContent project={project} />
-    </>
-  );
+  return <ProjectDocumentsContent project={project} />;
 }
 
 type ProjectDocumentsContentProps = {
@@ -119,9 +83,9 @@ function ProjectDocumentsContent({ project }: ProjectDocumentsContentProps) {
       setIsDialogOpen(false);
       if (newDoc) {
         navigate({
-          to: "/projects/$handle/docs/$docId",
+          to: "/workspace/$projectHandle/$docId",
           params: {
-            handle: project.handle,
+            projectHandle: project.handle,
             docId: newDoc._id,
           },
         });
@@ -219,8 +183,8 @@ function ProjectDocumentsContent({ project }: ProjectDocumentsContentProps) {
               document={document}
               onOpen={(docId) => {
                 navigate({
-                  to: "/projects/$handle/docs/$docId",
-                  params: { handle: project.handle, docId },
+                  to: "/workspace/$projectHandle/$docId",
+                  params: { projectHandle: project.handle, docId },
                 });
               }}
               onDelete={handleDeleteDocument}
@@ -276,7 +240,7 @@ function CreateDocumentDialog({
         <DialogHeader>
           <DialogTitle>New document</DialogTitle>
           <DialogDescription>
-            Optionally give your document a title. You can edit the frontmatter later.
+            Optionally give your document a title. You can edit all metadata later.
           </DialogDescription>
         </DialogHeader>
 
@@ -307,31 +271,5 @@ function CreateDocumentDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function SignInPrompt() {
-  return (
-    <div className="flex flex-col items-start gap-3 rounded-lg border px-4 py-6">
-      <p className="text-sm text-muted-foreground">
-        Sign in to view this project and manage its documents.
-      </p>
-      <SignInButton mode="modal">
-        <button
-          type="button"
-          className="rounded-md border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted"
-        >
-          Sign in
-        </button>
-      </SignInButton>
-    </div>
-  );
-}
-
-function LoadingNotice({ message }: { message: string }) {
-  return (
-    <div className="rounded-lg border border-dashed px-4 py-12 text-center text-sm text-muted-foreground">
-      {message}
-    </div>
   );
 }

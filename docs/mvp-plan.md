@@ -19,15 +19,7 @@
 * Lightweight activity log (save success/fail).
   **Acceptance:** Editing is smooth; conflicts never overwrite silently; realtime indicator visible when doc updates elsewhere.
 
-# Iteration 3 — Import / Export (.md)
-
-**Goal:** Single-file I/O with auto-fix.
-
-* **Import .md**: parse; validate required frontmatter categories; **auto-fill missing** (title placeholder, tags=[], status=draft, updated=now); show post-import review banner.
-* **Export .md**: frontmatter + body exactly as stored.
-  **Acceptance:** User can round-trip a doc; imports without full frontmatter succeed with clear auto-filled fields.
-
-# Iteration 4 — Title-only Search (UI + API)
+# Iteration 3 — Title-only Search (UI + API)
 
 **Goal:** Fast, predictable lookup within a project.
 
@@ -37,7 +29,7 @@
 * (Optional) tag filter applies **after** title search (keeps v1 simple).
   **Acceptance:** Search finds docs by title reliably; order is deterministic; works within project scope.
 
-# Iteration 5 — MCP Server (stdio) + Two Tools
+# Iteration 4 — MCP Server (stdio) + Two Tools
 
 **Goal:** Agents can retrieve Memoria content locally.
 
@@ -52,7 +44,7 @@
 * UX: “**Copy Handle for MCP**” action in UI.
   **Acceptance:** Claude/Cursor can search and fetch docs for the configured project using stdio MCP.
 
-# Iteration 6 — Snapshots Safety Net (+ Restore)
+# Iteration 5 — Snapshots Safety Net (+ Restore)
 
 **Goal:** Easy recovery without heavy history UI.
 
@@ -61,7 +53,7 @@
 * “Restore previous version” action (replaces head; confirms).
   **Acceptance:** Accidental edits are reversible; storage bounded by caps.
 
-# Iteration 7 — Governance, Quotas & Polish
+# Iteration 6 — Governance, Quotas & Polish
 
 **Goal:** Ship-ready basics and observability.
 
@@ -76,4 +68,6 @@
 ## Guardrails & Future-proofing (kept light)
 
 * **No chunking/anchors in v1.** Contracts already future-safe (MCP `get_document` delivers full body with size caps).
+* Explore a dedicated **`versions`** collection for storing immutable document bodies so the primary `documents` table can stay metadata-focused while retaining multiple revisions.
+* Harden the workspace tree query (Convex + router caching) so breadcrumbs continue to work as project/document counts grow and clients can progressively render partial data.
 * Later upgrades: per-section anchors/chunking, semantic re-rank, folder import/export, multi-user, richer version history—all without breaking v1 MCP/tool shapes.
