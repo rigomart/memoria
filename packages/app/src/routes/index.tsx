@@ -1,5 +1,5 @@
 import { SignInButton, SignUpButton } from "@clerk/clerk-react";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
 import { Brain } from "lucide-react";
 
@@ -16,7 +16,10 @@ function HomeRoute() {
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.28),_transparent_55%),_radial-gradient(circle_at_bottom,_rgba(16,185,129,0.22),_transparent_60%),_repeating-linear-gradient(90deg,_rgba(148,163,184,0.12)_0,_rgba(148,163,184,0.12)_1px,transparent_1px,transparent_120px),_repeating-linear-gradient(0deg,_rgba(148,163,184,0.12)_0,_rgba(148,163,184,0.12)_1px,transparent_1px,transparent_120px)]" />
       <header className="border-b border-border/70 bg-gradient-to-b from-background/95 via-background/90 to-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/75">
         <div className="mx-auto flex h-12 w-full max-w-5xl items-center justify-between gap-6 px-4">
-          <Link to="/" className="flex items-center gap-2 rounded-full bg-primary/10 px-2 py-1 text-sm font-medium text-primary">
+          <Link
+            to="/"
+            className="flex items-center gap-2 rounded-full bg-primary/10 px-2 py-1 text-sm font-medium text-primary"
+          >
             <span className="flex items-center gap-2">
               <span className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">
                 <Brain className="size-5" />
@@ -56,14 +59,15 @@ function HomeRoute() {
         <section className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-12 sm:px-6">
           <div className="max-w-2xl space-y-4">
             <span className="inline-flex items-center rounded-full border border-border/60 bg-background/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-muted-foreground shadow-sm">
-              Work in context
+              Context Your AI Agent Can Find
             </span>
             <h1 className="text-3xl font-semibold tracking-tight sm:text-[34px]">
-              Keep meetings from becoming lost knowledge
+              Stop pasting specs into every chat
             </h1>
             <p className="text-sm text-muted-foreground sm:text-base">
-              Memoria keeps briefs, notes, and follow-ups in one steady place so teams can pick things up without
-              rehashing the past.
+              Use AI to draft project plans, specs, and conventions quickly. Store them in Memoria,
+              and your AI agent pulls exactly what it needs automatically—no more context management
+              overhead.
             </p>
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               <Unauthenticated>
@@ -98,15 +102,7 @@ function HomeRoute() {
       </main>
       <footer className="border-t border-border/70 bg-background/95">
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-2 px-4 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <span>Built for teams who document as they work.</span>
-          <div className="flex gap-4">
-            <a className="hover:text-foreground" href="mailto:hello@memoria.app">
-              Contact
-            </a>
-            <a className="hover:text-foreground" href="#">
-              Privacy
-            </a>
-          </div>
+          <span>Built for developers who work with AI agents.</span>
         </div>
       </footer>
     </div>
@@ -115,15 +111,18 @@ function HomeRoute() {
 
 const features = [
   {
-    title: "Shared context",
-    description: "Collect project notes beside decisions so handoffs stay quick and confident.",
+    title: "AI-Assisted Writing",
+    description:
+      "Draft specs, PRDs, and conventions with AI help. Templates and smart suggestions make documentation fast without taking over control.",
   },
   {
-    title: "Search that helps",
-    description: "Jump to the right update with tags, filters, and recent activity in reach.",
+    title: "Automatic Context",
+    description:
+      "AI agents pull relevant docs on their own through MCP—no more manual copy-paste into prompts.",
   },
   {
-    title: "Ready for teams",
-    description: "Permissions, Clerk sign-in, and pragmatic defaults keep momentum without extra setup.",
+    title: "Living Documentation",
+    description:
+      "Update specs as you go with AI assistance. Keep decisions and conventions current alongside active work.",
   },
 ];
