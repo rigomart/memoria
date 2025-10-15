@@ -3,7 +3,6 @@ import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/empty-state";
-import { baseAppBreadcrumb, PageBreadcrumbs } from "@/components/page-breadcrumbs";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,10 +26,9 @@ export const Route = createFileRoute("/workspace/")({
 
 function ProjectsPage() {
   return (
-    <div className="space-y-6">
-      <PageBreadcrumbs items={[baseAppBreadcrumb]} className="text-xs text-muted-foreground" />
+    <main>
       <ProjectsContent />
-    </div>
+    </main>
   );
 }
 

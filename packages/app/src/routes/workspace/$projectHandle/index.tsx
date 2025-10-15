@@ -3,7 +3,6 @@ import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/empty-state";
-import { baseAppBreadcrumb, PageBreadcrumbs } from "@/components/page-breadcrumbs";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,6 +22,9 @@ const DOCUMENT_LIMIT = 5;
 
 export const Route = createFileRoute("/workspace/$projectHandle/")({
   component: ProjectDocumentsPage,
+  beforeLoad: ({ context, location }) => {
+    context.breadcrumb = { label: "Project", path: location.pathname };
+  },
 });
 
 function ProjectDocumentsPage() {
@@ -39,15 +41,9 @@ function ProjectDocumentsLoader({ handle }: ProjectDocumentsLoaderProps) {
 
   if (project === undefined) {
     return (
-      <>
-        <PageBreadcrumbs
-          items={[baseAppBreadcrumb, { label: "Loading…" }]}
-          className="text-xs text-muted-foreground"
-        />
-        <div className="rounded-lg border border-dashed px-4 py-12 text-center text-sm text-muted-foreground">
-          Loading project…
-        </div>
-      </>
+      <div className="rounded-lg border border-dashed px-4 py-12 text-center text-sm text-muted-foreground">
+        Loading project…
+      </div>
     );
   }
 
@@ -55,15 +51,7 @@ function ProjectDocumentsLoader({ handle }: ProjectDocumentsLoaderProps) {
     throw notFound();
   }
 
-  return (
-    <>
-      <PageBreadcrumbs
-        items={[baseAppBreadcrumb, { label: project.name }]}
-        className="text-xs text-muted-foreground"
-      />
-      <ProjectDocumentsContent project={project} />
-    </>
-  );
+  return <ProjectDocumentsContent project={project} />;
 }
 
 type ProjectDocumentsContentProps = {

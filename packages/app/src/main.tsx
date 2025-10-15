@@ -23,7 +23,7 @@ const convex = new ConvexReactClient(CONVEX_URL);
 const router = createRouter({
   routeTree,
   // biome-ignore lint/style/noNonNullAssertion: Recommended pattern for router context
-  context: { auth: undefined! },
+  context: { auth: undefined!, breadcrumb: undefined!, convex: convex },
 });
 
 declare module "@tanstack/react-router" {

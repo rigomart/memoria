@@ -4,7 +4,6 @@ import { EyeIcon, FilePenLineIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
-import { baseAppBreadcrumb, PageBreadcrumbs } from "@/components/page-breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { api } from "@/convex/_generated/api";
@@ -26,11 +25,14 @@ function formatTimestamp(timestamp: number) {
 
 export const Route = createFileRoute("/workspace/$projectHandle/$docId/")({
   component: DocumentEditorPage,
+  beforeLoad: ({ context, location }) => {
+    context.breadcrumb = { label: "Document", path: location.pathname };
+  },
 });
 
 function DocumentEditorPage() {
-  const { projectHandle, docId } = Route.useParams();
-  return <DocumentEditorLoader handle={projectHandle} docId={docId as Id<"documents">} />;
+  const { docId } = Route.useParams();
+  return <DocumentEditorLoader docId={docId as Id<"documents">} />;
 }
 
 type DocumentEditorProps = {
@@ -38,49 +40,26 @@ type DocumentEditorProps = {
 };
 
 type DocumentEditorLoaderProps = {
-  handle: string;
   docId: Id<"documents">;
 };
 
 // TODO: Project should not be necessary here. We can just get the document directly.
-function DocumentEditorLoader({ handle, docId }: DocumentEditorLoaderProps) {
-  const project = useQuery(api.projects.getProjectByHandle, { handle });
+function DocumentEditorLoader({ docId }: DocumentEditorLoaderProps) {
   const document = useQuery(api.documents.getDocument, { documentId: docId });
 
-  if (project === undefined || document === undefined) {
+  if (document === undefined) {
     return (
-      <>
-        <PageBreadcrumbs
-          items={[baseAppBreadcrumb, { label: "Loading…" }]}
-          className="text-xs text-muted-foreground"
-        />
-        <div className="rounded-lg border border-dashed px-4 py-12 text-center text-sm text-muted-foreground">
-          Loading document…
-        </div>
-      </>
+      <div className="rounded-lg border border-dashed px-4 py-12 text-center text-sm text-muted-foreground">
+        Loading document…
+      </div>
     );
   }
 
-  if (project === null || document === null || document.projectId !== project._id) {
+  if (document === null) {
     throw notFound();
   }
 
-  return (
-    <>
-      <PageBreadcrumbs
-        items={[
-          baseAppBreadcrumb,
-          {
-            label: project.name,
-            to: { to: "/workspace/$projectHandle", params: { projectHandle: project.handle } },
-          },
-          { label: document.title },
-        ]}
-        className="text-xs text-muted-foreground"
-      />
-      <DocumentEditor document={document} />
-    </>
-  );
+  return <DocumentEditor document={document} />;
 }
 
 function DocumentEditor({ document }: DocumentEditorProps) {
