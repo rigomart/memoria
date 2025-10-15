@@ -7,6 +7,7 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
+  BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { api } from "@/convex/_generated/api";
@@ -65,7 +66,11 @@ export function WorkspaceHeader() {
               <>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbLink>{currentDocument.title || "Untitled Document"}</BreadcrumbLink>
+                  <BreadcrumbPage>
+                    <span className="text-sm font-semibold">
+                      {currentDocument.title || "Untitled Document"}
+                    </span>
+                  </BreadcrumbPage>
                 </BreadcrumbItem>
               </>
             )}
