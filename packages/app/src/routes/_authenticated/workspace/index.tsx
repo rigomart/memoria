@@ -1,17 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
+import { FileText } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { 
-  Empty, 
-  EmptyContent, 
-  EmptyDescription, 
-  EmptyHeader, 
-  EmptyMedia, 
-  EmptyTitle 
-} from "@/components/ui/empty";
 import { Button } from "@/components/ui/button";
-import { FileText } from "lucide-react";
 import {
   Dialog,
   DialogClose,
@@ -21,6 +13,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { ValidationError } from "@/components/validation-error";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -142,7 +142,8 @@ function DocumentsContent() {
             </EmptyMedia>
             <EmptyTitle>Create your first document</EmptyTitle>
             <EmptyDescription>
-              Start building your personal knowledge base with architecture patterns, meeting notes, or technical specifications.
+              Start building your personal knowledge base with architecture patterns, meeting notes,
+              or technical specifications.
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
