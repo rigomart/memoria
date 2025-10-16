@@ -2,7 +2,7 @@ import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requireUserId } from "./utils";
 
-const DOCUMENT_LIMIT = 5;
+const DOCUMENT_LIMIT = 10;
 export const MAX_DOCUMENT_SIZE_BYTES = 800 * 1024;
 
 export function calculateSize(body: string): number {
@@ -11,25 +11,17 @@ export function calculateSize(body: string): number {
 
 export const createDocument = mutation({
   args: {
-    projectId: v.id("projects"),
     title: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx);
-    const project = await ctx.db.get(args.projectId);
-    if (!project) {
-      throw new ConvexError("Project not found.");
-    }
-    if (project.userId !== userId) {
-      throw new ConvexError("You do not have permission to add documents to this project.");
-    }
 
     const existingDocs = await ctx.db
       .query("documents")
-      .withIndex("by_projectId", (q) => q.eq("projectId", project._id))
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
       .take(DOCUMENT_LIMIT + 1);
     if (existingDocs.length >= DOCUMENT_LIMIT) {
-      throw new ConvexError("Document limit reached. Each project can have up to 5 documents.");
+      throw new ConvexError("Document limit reached. You can have up to 10 documents.");
     }
 
     const now = Date.now();
@@ -37,7 +29,7 @@ export const createDocument = mutation({
     const initialBody = "";
 
     const docId = await ctx.db.insert("documents", {
-      projectId: project._id,
+      userId,
       title,
       body: initialBody,
       tags: [],
@@ -68,8 +60,7 @@ export const updateDocument = mutation({
       throw new ConvexError("Document not found.");
     }
 
-    const project = await ctx.db.get(document.projectId);
-    if (!project || project.userId !== userId) {
+    if (document.userId !== userId) {
       throw new ConvexError("You do not have permission to edit this document.");
     }
 
@@ -112,8 +103,7 @@ export const deleteDocument = mutation({
       throw new ConvexError("Document not found.");
     }
 
-    const project = await ctx.db.get(document.projectId);
-    if (!project || project.userId !== userId) {
+    if (document.userId !== userId) {
       throw new ConvexError("You do not have permission to delete this document.");
     }
 
@@ -122,23 +112,18 @@ export const deleteDocument = mutation({
   },
 });
 
-export const listProjectDocuments = query({
-  args: {
-    projectId: v.id("projects"),
-  },
-  handler: async (ctx, args) => {
+export const listUserDocuments = query({
+  args: {},
+  handler: async (ctx) => {
     const userId = await requireUserId(ctx);
-    const project = await ctx.db.get(args.projectId);
-    if (!project || project.userId !== userId) {
-      throw new ConvexError("Project not found or inaccessible.");
-    }
 
     const documents = await ctx.db
       .query("documents")
-      .withIndex("by_projectId", (q) => q.eq("projectId", project._id))
+      .withIndex("by_userId_updated", (q) => q.eq("userId", userId))
+      .order("desc")
       .collect();
 
-    return documents.sort((a, b) => b.updated - a.updated);
+    return documents;
   },
 });
 
@@ -152,8 +137,7 @@ export const getDocument = query({
     if (!document) {
       return null;
     }
-    const project = await ctx.db.get(document.projectId);
-    if (!project || project.userId !== userId) {
+    if (document.userId !== userId) {
       return null;
     }
     return document;

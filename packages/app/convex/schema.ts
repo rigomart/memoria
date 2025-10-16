@@ -2,16 +2,8 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
-  projects: defineTable({
-    userId: v.string(),
-    name: v.string(),
-    handle: v.string(),
-    createdAt: v.number(),
-  })
-    .index("by_userId", ["userId"])
-    .index("by_handle", ["handle"]),
   documents: defineTable({
-    projectId: v.id("projects"),
+    userId: v.string(),
     title: v.string(),
     body: v.string(),
     tags: v.array(v.string()),
@@ -20,5 +12,7 @@ export default defineSchema({
     sizeBytes: v.number(),
     createdAt: v.number(),
     revisionToken: v.string(),
-  }).index("by_projectId", ["projectId"]),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_userId_updated", ["userId", "updated"]),
 });
