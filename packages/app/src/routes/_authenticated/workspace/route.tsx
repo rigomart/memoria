@@ -7,9 +7,11 @@ export const Route = createFileRoute("/_authenticated/workspace")({
 
 function WorkspaceLayout() {
   return (
-    <div>
+    <div className="flex min-h-screen flex-col">
       <WorkspaceHeader />
-      <Outlet />
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
+        <Outlet />
+      </main>
     </div>
   );
 }

@@ -174,7 +174,7 @@ function DocumentEditor({ document }: DocumentEditorProps) {
   };
 
   return (
-    <div className="mx-auto flex w-full flex-col gap-4">
+    <div className="flex w-full flex-col gap-4">
       <div className="rounded-lg border border-border/40 bg-background/60 backdrop-blur-md">
         <div className="grid gap-3 px-4 py-3 lg:grid-cols-[1fr_2fr_1fr] md:grid-cols-1">
           <div className="space-y-2 lg:space-y-3">
