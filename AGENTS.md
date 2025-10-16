@@ -8,7 +8,7 @@
 
 ## Build, Test, and Development Commands
 - `bun run dev` – Starts the Vite dev server (only if a local run is needed; avoid when another session already has it running).
-- `bunx --bun tsc --noEmit` – Type-checks the project against the current schema.
+- `bun run check-types` – Type-checks the project against the current schema (uses `tsc -b --noEmit` for project references).
 - `bun run lint` – Runs Biome to lint and format ([auto-fix] enabled). Some Tailwind at-rule warnings may persist; note them instead of suppressing silently.
 - `bun run build` – Executes the production build (Vite + TypeScript project references).
 
@@ -30,3 +30,4 @@
 ## Agent-Specific Instructions
 - Do not run `convex dev` or other long-lived processes when they may already be active; request results from the host instead.
 - Avoid destructive git commands (`reset --hard`, `checkout -- .`). Never revert user-owned changes unless explicitly asked.
+- Do not add new dependencies without asking first.
