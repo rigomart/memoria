@@ -11,7 +11,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import type { Doc, Id } from "../../../../../convex/_generated/dataModel";
+import type { Doc, Id } from "../../../../../../convex/_generated/dataModel";
 
 type Document = Doc<"documents">;
 

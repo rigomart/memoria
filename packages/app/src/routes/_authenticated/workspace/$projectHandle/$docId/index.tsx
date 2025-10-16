@@ -30,7 +30,7 @@ function formatTimestamp(timestamp: number) {
   }
 }
 
-export const Route = createFileRoute("/workspace/$projectHandle/$docId/")({
+export const Route = createFileRoute("/_authenticated/workspace/$projectHandle/$docId/")({
   component: DocumentEditorPage,
 });
 

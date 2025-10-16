@@ -20,7 +20,7 @@ import { DocumentListItem } from "./-components/document-list-item";
 
 const DOCUMENT_LIMIT = 5;
 
-export const Route = createFileRoute("/workspace/$projectHandle/")({
+export const Route = createFileRoute("/_authenticated/workspace/$projectHandle/")({
   component: ProjectDocumentsPage,
 });
 

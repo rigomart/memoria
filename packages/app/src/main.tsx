@@ -8,7 +8,6 @@ import { routeTree } from "./routeTree.gen";
 import "./index.css";
 import { ThemeProvider } from "./components/theme-provider";
 import { Toaster } from "./components/ui/sonner";
-import { Spinner } from "./components/ui/spinner";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -34,14 +33,6 @@ declare module "@tanstack/react-router" {
 
 function InnerApp() {
   const auth = useConvexAuth();
-
-  if (auth.isLoading) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center">
-        <Spinner className="size-16" />
-      </div>
-    );
-  }
 
   return (
     <>

@@ -20,7 +20,7 @@ import { ProjectCard } from "./-components/project-card";
 
 const PROJECT_LIMIT = 2;
 
-export const Route = createFileRoute("/workspace/")({
+export const Route = createFileRoute("/_authenticated/workspace/")({
   component: ProjectsPage,
 });
 

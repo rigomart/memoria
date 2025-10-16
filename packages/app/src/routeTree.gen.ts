@@ -9,15 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as WorkspaceRouteRouteImport } from './routes/workspace/route'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as WorkspaceIndexRouteImport } from './routes/workspace/index'
-import { Route as WorkspaceProjectHandleIndexRouteImport } from './routes/workspace/$projectHandle/index'
-import { Route as WorkspaceProjectHandleDocIdIndexRouteImport } from './routes/workspace/$projectHandle/$docId/index'
+import { Route as AuthenticatedWorkspaceRouteRouteImport } from './routes/_authenticated/workspace/route'
+import { Route as AuthenticatedWorkspaceIndexRouteImport } from './routes/_authenticated/workspace/index'
+import { Route as AuthenticatedWorkspaceProjectHandleIndexRouteImport } from './routes/_authenticated/workspace/$projectHandle/index'
+import { Route as AuthenticatedWorkspaceProjectHandleDocIdIndexRouteImport } from './routes/_authenticated/workspace/$projectHandle/$docId/index'
 
-const WorkspaceRouteRoute = WorkspaceRouteRouteImport.update({
-  id: '/workspace',
-  path: '/workspace',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -25,44 +25,52 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WorkspaceIndexRoute = WorkspaceIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => WorkspaceRouteRoute,
-} as any)
-const WorkspaceProjectHandleIndexRoute =
-  WorkspaceProjectHandleIndexRouteImport.update({
+const AuthenticatedWorkspaceRouteRoute =
+  AuthenticatedWorkspaceRouteRouteImport.update({
+    id: '/workspace',
+    path: '/workspace',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedWorkspaceIndexRoute =
+  AuthenticatedWorkspaceIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedWorkspaceRouteRoute,
+  } as any)
+const AuthenticatedWorkspaceProjectHandleIndexRoute =
+  AuthenticatedWorkspaceProjectHandleIndexRouteImport.update({
     id: '/$projectHandle/',
     path: '/$projectHandle/',
-    getParentRoute: () => WorkspaceRouteRoute,
+    getParentRoute: () => AuthenticatedWorkspaceRouteRoute,
   } as any)
-const WorkspaceProjectHandleDocIdIndexRoute =
-  WorkspaceProjectHandleDocIdIndexRouteImport.update({
+const AuthenticatedWorkspaceProjectHandleDocIdIndexRoute =
+  AuthenticatedWorkspaceProjectHandleDocIdIndexRouteImport.update({
     id: '/$projectHandle/$docId/',
     path: '/$projectHandle/$docId/',
-    getParentRoute: () => WorkspaceRouteRoute,
+    getParentRoute: () => AuthenticatedWorkspaceRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/workspace': typeof WorkspaceRouteRouteWithChildren
-  '/workspace/': typeof WorkspaceIndexRoute
-  '/workspace/$projectHandle': typeof WorkspaceProjectHandleIndexRoute
-  '/workspace/$projectHandle/$docId': typeof WorkspaceProjectHandleDocIdIndexRoute
+  '/workspace': typeof AuthenticatedWorkspaceRouteRouteWithChildren
+  '/workspace/': typeof AuthenticatedWorkspaceIndexRoute
+  '/workspace/$projectHandle': typeof AuthenticatedWorkspaceProjectHandleIndexRoute
+  '/workspace/$projectHandle/$docId': typeof AuthenticatedWorkspaceProjectHandleDocIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/workspace': typeof WorkspaceIndexRoute
-  '/workspace/$projectHandle': typeof WorkspaceProjectHandleIndexRoute
-  '/workspace/$projectHandle/$docId': typeof WorkspaceProjectHandleDocIdIndexRoute
+  '/workspace': typeof AuthenticatedWorkspaceIndexRoute
+  '/workspace/$projectHandle': typeof AuthenticatedWorkspaceProjectHandleIndexRoute
+  '/workspace/$projectHandle/$docId': typeof AuthenticatedWorkspaceProjectHandleDocIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/workspace': typeof WorkspaceRouteRouteWithChildren
-  '/workspace/': typeof WorkspaceIndexRoute
-  '/workspace/$projectHandle/': typeof WorkspaceProjectHandleIndexRoute
-  '/workspace/$projectHandle/$docId/': typeof WorkspaceProjectHandleDocIdIndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/_authenticated/workspace': typeof AuthenticatedWorkspaceRouteRouteWithChildren
+  '/_authenticated/workspace/': typeof AuthenticatedWorkspaceIndexRoute
+  '/_authenticated/workspace/$projectHandle/': typeof AuthenticatedWorkspaceProjectHandleIndexRoute
+  '/_authenticated/workspace/$projectHandle/$docId/': typeof AuthenticatedWorkspaceProjectHandleDocIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,24 +89,25 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/workspace'
-    | '/workspace/'
-    | '/workspace/$projectHandle/'
-    | '/workspace/$projectHandle/$docId/'
+    | '/_authenticated'
+    | '/_authenticated/workspace'
+    | '/_authenticated/workspace/'
+    | '/_authenticated/workspace/$projectHandle/'
+    | '/_authenticated/workspace/$projectHandle/$docId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  WorkspaceRouteRoute: typeof WorkspaceRouteRouteWithChildren
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/workspace': {
-      id: '/workspace'
-      path: '/workspace'
-      fullPath: '/workspace'
-      preLoaderRoute: typeof WorkspaceRouteRouteImport
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -108,49 +117,72 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/workspace/': {
-      id: '/workspace/'
+    '/_authenticated/workspace': {
+      id: '/_authenticated/workspace'
+      path: '/workspace'
+      fullPath: '/workspace'
+      preLoaderRoute: typeof AuthenticatedWorkspaceRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/workspace/': {
+      id: '/_authenticated/workspace/'
       path: '/'
       fullPath: '/workspace/'
-      preLoaderRoute: typeof WorkspaceIndexRouteImport
-      parentRoute: typeof WorkspaceRouteRoute
+      preLoaderRoute: typeof AuthenticatedWorkspaceIndexRouteImport
+      parentRoute: typeof AuthenticatedWorkspaceRouteRoute
     }
-    '/workspace/$projectHandle/': {
-      id: '/workspace/$projectHandle/'
+    '/_authenticated/workspace/$projectHandle/': {
+      id: '/_authenticated/workspace/$projectHandle/'
       path: '/$projectHandle'
       fullPath: '/workspace/$projectHandle'
-      preLoaderRoute: typeof WorkspaceProjectHandleIndexRouteImport
-      parentRoute: typeof WorkspaceRouteRoute
+      preLoaderRoute: typeof AuthenticatedWorkspaceProjectHandleIndexRouteImport
+      parentRoute: typeof AuthenticatedWorkspaceRouteRoute
     }
-    '/workspace/$projectHandle/$docId/': {
-      id: '/workspace/$projectHandle/$docId/'
+    '/_authenticated/workspace/$projectHandle/$docId/': {
+      id: '/_authenticated/workspace/$projectHandle/$docId/'
       path: '/$projectHandle/$docId'
       fullPath: '/workspace/$projectHandle/$docId'
-      preLoaderRoute: typeof WorkspaceProjectHandleDocIdIndexRouteImport
-      parentRoute: typeof WorkspaceRouteRoute
+      preLoaderRoute: typeof AuthenticatedWorkspaceProjectHandleDocIdIndexRouteImport
+      parentRoute: typeof AuthenticatedWorkspaceRouteRoute
     }
   }
 }
 
-interface WorkspaceRouteRouteChildren {
-  WorkspaceIndexRoute: typeof WorkspaceIndexRoute
-  WorkspaceProjectHandleIndexRoute: typeof WorkspaceProjectHandleIndexRoute
-  WorkspaceProjectHandleDocIdIndexRoute: typeof WorkspaceProjectHandleDocIdIndexRoute
+interface AuthenticatedWorkspaceRouteRouteChildren {
+  AuthenticatedWorkspaceIndexRoute: typeof AuthenticatedWorkspaceIndexRoute
+  AuthenticatedWorkspaceProjectHandleIndexRoute: typeof AuthenticatedWorkspaceProjectHandleIndexRoute
+  AuthenticatedWorkspaceProjectHandleDocIdIndexRoute: typeof AuthenticatedWorkspaceProjectHandleDocIdIndexRoute
 }
 
-const WorkspaceRouteRouteChildren: WorkspaceRouteRouteChildren = {
-  WorkspaceIndexRoute: WorkspaceIndexRoute,
-  WorkspaceProjectHandleIndexRoute: WorkspaceProjectHandleIndexRoute,
-  WorkspaceProjectHandleDocIdIndexRoute: WorkspaceProjectHandleDocIdIndexRoute,
+const AuthenticatedWorkspaceRouteRouteChildren: AuthenticatedWorkspaceRouteRouteChildren =
+  {
+    AuthenticatedWorkspaceIndexRoute: AuthenticatedWorkspaceIndexRoute,
+    AuthenticatedWorkspaceProjectHandleIndexRoute:
+      AuthenticatedWorkspaceProjectHandleIndexRoute,
+    AuthenticatedWorkspaceProjectHandleDocIdIndexRoute:
+      AuthenticatedWorkspaceProjectHandleDocIdIndexRoute,
+  }
+
+const AuthenticatedWorkspaceRouteRouteWithChildren =
+  AuthenticatedWorkspaceRouteRoute._addFileChildren(
+    AuthenticatedWorkspaceRouteRouteChildren,
+  )
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedWorkspaceRouteRoute: typeof AuthenticatedWorkspaceRouteRouteWithChildren
 }
 
-const WorkspaceRouteRouteWithChildren = WorkspaceRouteRoute._addFileChildren(
-  WorkspaceRouteRouteChildren,
-)
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedWorkspaceRouteRoute:
+    AuthenticatedWorkspaceRouteRouteWithChildren,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  WorkspaceRouteRoute: WorkspaceRouteRouteWithChildren,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
