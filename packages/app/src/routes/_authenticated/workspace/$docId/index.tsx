@@ -1,6 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
-import { EyeIcon, FilePenLineIcon, XIcon } from "lucide-react";
+import { format } from "date-fns";
+import { CheckIcon, PencilIcon, XIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
@@ -12,23 +13,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Spinner } from "@/components/ui/spinner";
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { ConflictModal } from "./-components/conflict-modal";
-
-const MAX_DOCUMENT_SIZE_BYTES = 800 * 1024;
-
-function formatTimestamp(timestamp: number) {
-  try {
-    return new Intl.DateTimeFormat(undefined, {
-      dateStyle: "medium",
-      timeStyle: "short",
-    }).format(new Date(timestamp));
-  } catch {
-    return new Date(timestamp).toLocaleString();
-  }
-}
 
 export const Route = createFileRoute("/_authenticated/workspace/$docId/")({
   component: DocumentEditorPage,
@@ -74,7 +62,10 @@ function DocumentEditor({ document }: DocumentEditorProps) {
   const [draftStatus, setDraftStatus] = useState(document.status);
   const [isSaving, setIsSaving] = useState(false);
   const [conflictModalOpen, setConflictModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"preview" | "edit">("preview");
+  const [isTitleEditing, setIsTitleEditing] = useState(false);
   const localRevisionToken = useRef(document.revisionToken);
+  const titleInputRef = useRef<HTMLInputElement>(null);
 
   const normalizeTags = (tags: string[]) =>
     tags.map((tag) => tag.trim()).filter((tag) => tag.length > 0);
@@ -136,13 +127,19 @@ function DocumentEditor({ document }: DocumentEditorProps) {
     setDraftTags(document.tags);
     setPendingTag("");
     setDraftStatus(document.status);
+    setIsTitleEditing(false);
     setConflictModalOpen(true);
   }, [document.revisionToken, document.body, document.title, document.tags, document.status]);
 
-  const limitKilobytes = Math.round((MAX_DOCUMENT_SIZE_BYTES / 1024) * 10) / 10;
-  const savedSizeKilobytes = Math.round((document.sizeBytes / 1024) * 10) / 10;
+  // Focus title input when entering edit mode
+  useEffect(() => {
+    if (isTitleEditing && titleInputRef.current) {
+      titleInputRef.current.focus();
+      titleInputRef.current.select();
+    }
+  }, [isTitleEditing]);
 
-  const updatedLabel = formatTimestamp(document.updated);
+  const updatedLabel = format(new Date(document.updated), "PPp");
 
   const handleSave = async () => {
     if (!isDirty || isSaving) {
@@ -173,186 +170,198 @@ function DocumentEditor({ document }: DocumentEditorProps) {
   };
 
   return (
-    <div className="flex w-full flex-col gap-4">
-      <div className="rounded-lg border border-border/40 bg-background/60 backdrop-blur-md">
-        <div className="grid gap-3 px-4 py-3 lg:grid-cols-[1fr_2fr_1fr] md:grid-cols-1">
-          <div className="space-y-2 lg:space-y-3">
-            <div className="space-y-1">
-              <label htmlFor="title" className="text-xs font-medium text-foreground">
-                Title
-              </label>
+    <div className="flex w-full flex-col gap-8">
+      {/* Title Section - Linear-like inline editable */}
+      <div className="space-y-6">
+        <div className="group">
+          {isTitleEditing ? (
+            <input
+              ref={titleInputRef}
+              type="text"
+              value={draftTitle}
+              onChange={(event) => setDraftTitle(event.target.value)}
+              onBlur={() => setIsTitleEditing(false)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  setIsTitleEditing(false);
+                }
+                if (event.key === "Escape") {
+                  setDraftTitle(document.title);
+                  setIsTitleEditing(false);
+                }
+              }}
+              disabled={isSaving}
+              className="w-full bg-transparent text-4xl font-bold text-foreground outline-none border-b-2 border-primary pb-1"
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsTitleEditing(true)}
+              disabled={isSaving}
+              className="w-full text-left text-4xl font-bold text-foreground hover:text-foreground/80 transition-colors border-b-2 border-transparent hover:border-border/40 pb-1 group-hover:border-border/40"
+            >
+              {draftTitle || "Untitled Document"}
+            </button>
+          )}
+        </div>
+
+        <div className="text-sm text-muted-foreground">Updated {updatedLabel}</div>
+
+        {/* Metadata Section - Compact layout */}
+        <div className="flex flex-wrap items-center gap-4">
+          {/* Tags */}
+          <div className="flex-1 min-w-[300px]">
+            <div className="flex flex-wrap items-center gap-2">
+              {draftTags.map((tag, index) => (
+                <button
+                  key={tag}
+                  type="button"
+                  className="inline-flex items-center gap-1 rounded-full border border-border/40 bg-background/50 px-2.5 py-1 text-xs font-medium text-foreground transition hover:border-primary/50 hover:bg-primary/10"
+                  onClick={() => removeTagAtIndex(index)}
+                  disabled={isSaving}
+                >
+                  <span>{tag}</span>
+                  <XIcon className="size-3" aria-hidden />
+                  <span className="sr-only">Remove {tag}</span>
+                </button>
+              ))}
               <input
-                id="title"
-                className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm outline-none ring-offset-background focus:border-primary focus:ring-2 focus:ring-primary/40"
-                value={draftTitle}
-                onChange={(event) => {
-                  setDraftTitle(event.target.value);
+                id="tag-input"
+                className="min-w-[120px] flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/60 px-2 py-1"
+                placeholder={draftTags.length === 0 ? "Add tags..." : ""}
+                value={pendingTag}
+                onChange={(event) => setPendingTag(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === "," || event.key === "Tab") {
+                    event.preventDefault();
+                    commitPendingTag();
+                  } else if (
+                    event.key === "Backspace" &&
+                    pendingTag.length === 0 &&
+                    draftTags.length > 0
+                  ) {
+                    event.preventDefault();
+                    removeTagAtIndex(draftTags.length - 1);
+                  }
                 }}
+                onBlur={() => commitPendingTag()}
                 disabled={isSaving}
               />
             </div>
-          </div>
-
-          <div className="space-y-2 lg:space-y-3">
-            <div className="space-y-1">
-              <label htmlFor="tag-input" className="text-xs font-medium text-foreground">
-                Tags
-              </label>
-              <div className="rounded-md border border-border/60 bg-background/70 px-3 py-1.5">
-                <div className="flex flex-wrap items-center gap-1.5 text-sm">
-                  {draftTags.map((tag, index) => (
-                    <button
-                      key={tag}
-                      type="button"
-                      className="inline-flex items-center gap-1 rounded-full border border-border/50 bg-background/80 px-2 py-0.5 text-xs font-medium text-foreground transition hover:border-primary/60 hover:bg-primary/10"
-                      onClick={() => {
-                        removeTagAtIndex(index);
-                      }}
-                      disabled={isSaving}
-                    >
-                      <span>{tag}</span>
-                      <XIcon className="size-3" aria-hidden />
-                      <span className="sr-only">Remove {tag}</span>
-                    </button>
-                  ))}
-                  <input
-                    id="tag-input"
-                    className="min-w-[100px] flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/70"
-                    placeholder={draftTags.length === 0 ? "Add tag…" : ""}
-                    value={pendingTag}
-                    onChange={(event) => {
-                      setPendingTag(event.target.value);
-                    }}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === "," || event.key === "Tab") {
-                        event.preventDefault();
-                        commitPendingTag();
-                      } else if (
-                        event.key === "Backspace" &&
-                        pendingTag.length === 0 &&
-                        draftTags.length > 0
-                      ) {
-                        event.preventDefault();
-                        removeTagAtIndex(draftTags.length - 1);
-                      }
-                    }}
-                    onBlur={() => {
-                      commitPendingTag();
-                    }}
+            {availableSuggestions.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {availableSuggestions.map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    type="button"
+                    className="rounded-full border border-border/30 bg-background/50 px-2 py-0.5 text-xs font-medium text-muted-foreground transition hover:border-primary/30 hover:text-foreground"
+                    onClick={() => addTag(suggestion)}
                     disabled={isSaving}
-                  />
-                </div>
+                  >
+                    {suggestion}
+                  </button>
+                ))}
               </div>
-              {availableSuggestions.length > 0 ? (
-                <div className="flex flex-wrap gap-1.5">
-                  {availableSuggestions.map((suggestion) => (
-                    <button
-                      key={suggestion}
-                      type="button"
-                      className="rounded-full border border-border/40 bg-background/80 px-2 py-0.5 text-xs font-medium text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
-                      onClick={() => {
-                        addTag(suggestion);
-                      }}
-                      disabled={isSaving}
-                    >
-                      {suggestion}
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-            </div>
+            )}
           </div>
 
-          <aside className="space-y-2 rounded-md border border-border/50 bg-background/70 p-3">
-            <div className="space-y-1.5">
-              <label htmlFor="status" className="text-xs font-medium text-foreground">
-                Status
-              </label>
-              <Select
-                value={draftStatus}
-                onValueChange={(value) => {
-                  setDraftStatus(value);
-                }}
-                disabled={isSaving}
-              >
-                <SelectTrigger id="status" className="w-full h-8">
-                  <SelectValue placeholder="Choose status" />
-                </SelectTrigger>
-                <SelectContent align="end">
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="in-progress">In Progress</SelectItem>
-                  <SelectItem value="review">Review</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </aside>
+          {/* Status */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">Status:</span>
+            <Select
+              value={draftStatus}
+              onValueChange={(value) => setDraftStatus(value)}
+              disabled={isSaving}
+            >
+              <SelectTrigger className="w-[140px] h-8 border-border/40">
+                <SelectValue placeholder="Choose status" />
+              </SelectTrigger>
+              <SelectContent align="end">
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="in-progress">In Progress</SelectItem>
+                <SelectItem value="review">Review</SelectItem>
+                <SelectItem value="published">Published</SelectItem>
+                <SelectItem value="archived">Archived</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
-      <Tabs defaultValue="edit" className="gap-3 max-w-6xl mx-auto w-full">
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/60 bg-background/70 px-3 py-2">
-          <TabsList className="bg-background/80">
-            <TabsTrigger value="edit" className="px-3">
-              <FilePenLineIcon className="size-4" aria-hidden />
-              Edit
-            </TabsTrigger>
-            <TabsTrigger value="preview" className="px-3">
-              <EyeIcon className="size-4" aria-hidden />
-              Preview
-            </TabsTrigger>
-          </TabsList>
-          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-            {savedSizeKilobytes !== null ? (
-              <span className="inline-flex items-center rounded-full border border-border/50 bg-background/70 px-2 py-1">
-                {savedSizeKilobytes} KB of {limitKilobytes} KB
-              </span>
-            ) : null}
-            <span className="inline-flex items-center rounded-full border border-border/50 bg-background/70 px-2 py-1">
-              Updated {updatedLabel}
-            </span>
+      {/* Editor/Preview Area */}
+      <div className="space-y-3">
+        {/* Toolbar */}
+        <div className="flex items-center justify-between gap-3 px-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setActiveTab(activeTab === "preview" ? "edit" : "preview")}
+            disabled={isSaving}
+            className="gap-2"
+          >
+            <PencilIcon className="size-4" aria-hidden />
+            {activeTab === "preview" ? "Edit markdown" : "View preview"}
+          </Button>
+
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              {isSaving ? (
+                <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Spinner className="size-3" />
+                  Saving...
+                </span>
+              ) : isDirty ? (
+                <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                  Unsaved changes
+                </span>
+              ) : (
+                <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <CheckIcon className="size-3 text-green-600" />
+                  Saved
+                </span>
+              )}
+            </div>
             <Button
               type="button"
-              variant="secondary"
+              variant="default"
               size="sm"
               onClick={handleSave}
               disabled={isSaving || !isDirty}
             >
-              {isSaving ? "Saving…" : isDirty ? "Save changes" : "Saved"}
+              {isSaving ? "Saving..." : "Save changes"}
             </Button>
           </div>
         </div>
-        <TabsContent value="edit" className="mt-0">
-          <div className="mx-auto w-full overflow-hidden rounded-2xl border border-border/50 bg-background/60 shadow-lg">
+
+        {/* Editor/Preview */}
+        {activeTab === "edit" ? (
+          <div className="w-full overflow-hidden rounded-lg border border-border/30 bg-background/40">
             <textarea
               value={draftBody}
-              onChange={(event) => {
-                const nextBody = event.target.value;
-                setDraftBody(nextBody);
-              }}
-              className="min-h-[60vh] w-full resize-y bg-background/70 px-6 py-6 font-mono text-[0.95rem] leading-7 text-foreground/90 outline-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+              onChange={(event) => setDraftBody(event.target.value)}
+              className="min-h-[60vh] w-full resize-y bg-transparent px-6 py-6 font-mono text-[0.95rem] leading-7 text-foreground outline-none focus-visible:outline-none"
               spellCheck={false}
+              placeholder="Start writing..."
             />
           </div>
-        </TabsContent>
-        <TabsContent value="preview" className="mt-0">
-          <div className="mx-auto w-full overflow-hidden rounded-2xl border border-border/50 bg-background/60 shadow-lg">
-            <article className="min-h-[60vh] space-y-5 px-6 py-6 text-[0.95rem] leading-7 text-muted-foreground">
-              <Streamdown>{draftBody}</Streamdown>
+        ) : (
+          <div className="w-full overflow-hidden rounded-lg border border-border/30 bg-background/40">
+            <article className="min-h-[60vh] space-y-5 px-6 py-6 text-[0.95rem] leading-7 text-foreground">
+              {draftBody ? (
+                <Streamdown>{draftBody}</Streamdown>
+              ) : (
+                <p className="text-muted-foreground italic">Nothing to preview yet...</p>
+              )}
             </article>
           </div>
-        </TabsContent>
-      </Tabs>
+        )}
+      </div>
 
       <ConflictModal
         open={conflictModalOpen}
-        onDismiss={() => {
-          setConflictModalOpen(false);
-        }}
-        onReload={() => {
-          setConflictModalOpen(false);
-        }}
+        onDismiss={() => setConflictModalOpen(false)}
+        onReload={() => setConflictModalOpen(false)}
       />
     </div>
   );
