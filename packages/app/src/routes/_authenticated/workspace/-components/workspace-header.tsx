@@ -11,12 +11,13 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 
 export function WorkspaceHeader() {
   const { docId } = useParams({ strict: false });
   const currentDocument = useQuery(
     api.documents.getDocument,
-    docId ? { documentId: docId } : "skip",
+    docId ? { documentId: docId as Id<"documents"> } : "skip",
   );
 
   return (

@@ -2,8 +2,16 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { EmptyState } from "@/components/empty-state";
+import { 
+  Empty, 
+  EmptyContent, 
+  EmptyDescription, 
+  EmptyHeader, 
+  EmptyMedia, 
+  EmptyTitle 
+} from "@/components/ui/empty";
 import { Button } from "@/components/ui/button";
+import { FileText } from "lucide-react";
 import {
   Dialog,
   DialogClose,
@@ -127,10 +135,17 @@ function DocumentsContent() {
           Loading documents…
         </div>
       ) : documents.length === 0 ? (
-        <EmptyState
-          title="Create your first document"
-          description="Start building your personal knowledge base with architecture patterns, meeting notes, or technical specifications."
-          action={
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <FileText className="size-6" />
+            </EmptyMedia>
+            <EmptyTitle>Create your first document</EmptyTitle>
+            <EmptyDescription>
+              Start building your personal knowledge base with architecture patterns, meeting notes, or technical specifications.
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
             <Button
               type="button"
               onClick={() => {
@@ -140,8 +155,8 @@ function DocumentsContent() {
             >
               New Document
             </Button>
-          }
-        />
+          </EmptyContent>
+        </Empty>
       ) : (
         <div className="space-y-3">
           {documents.map((document) => (
