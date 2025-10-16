@@ -159,7 +159,7 @@ function DocumentEditor({ document }: DocumentEditorProps) {
   return (
     <div className="flex w-full flex-col gap-8">
       {/* Title Section - Linear-like inline editable */}
-      <div className="space-y-6">
+      <div className="space-y-2">
         <div className="group">
           {isTitleEditing ? (
             <input
