@@ -13,16 +13,11 @@ import {
 import { api } from "@/convex/_generated/api";
 
 export function WorkspaceHeader() {
-  const workspaceTree = useQuery(api.workspace.getWorkspaceTree);
-  const { projectHandle, docId } = useParams({ strict: false });
-
-  // Find project and document data from workspace tree
-  const currentProject = projectHandle
-    ? workspaceTree?.find((entry) => entry.project.handle === projectHandle)
-    : undefined;
-
-  const currentDocument =
-    docId && currentProject ? currentProject.documents.find((doc) => doc._id === docId) : undefined;
+  const { docId } = useParams({ strict: false });
+  const currentDocument = useQuery(
+    api.documents.getDocument,
+    docId ? { documentId: docId } : "skip",
+  );
 
   return (
     <header className="sticky top-0 z-20 border-b border-border/70 bg-gradient-to-b from-background/95 via-background/90 to-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/75">
@@ -42,25 +37,9 @@ export function WorkspaceHeader() {
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/workspace">Workspace</Link>
+                <Link to="/workspace">Documents</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
-
-            {currentProject && (
-              <>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link
-                      to="/workspace/$projectHandle"
-                      params={{ projectHandle: currentProject.project.handle }}
-                    >
-                      {currentProject.project.name}
-                    </Link>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-              </>
-            )}
 
             {currentDocument && (
               <>

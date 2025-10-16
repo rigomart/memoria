@@ -30,3 +30,4 @@
 ## Agent-Specific Instructions
 - Do not run `convex dev` or other long-lived processes when they may already be active; request results from the host instead.
 - Avoid destructive git commands (`reset --hard`, `checkout -- .`). Never revert user-owned changes unless explicitly asked.
+- Do not add new dependencies without asking first.

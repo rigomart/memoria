@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -15,74 +15,73 @@ import {
 } from "@/components/ui/dialog";
 import { ValidationError } from "@/components/validation-error";
 import { api } from "@/convex/_generated/api";
-import type { Doc, Id } from "@/convex/_generated/dataModel";
-import { ProjectCard } from "./-components/project-card";
+import type { Id } from "@/convex/_generated/dataModel";
+import { DocumentListItem } from "./-components/document-list-item";
 
-const PROJECT_LIMIT = 2;
+const DOCUMENT_LIMIT = 10;
 
 export const Route = createFileRoute("/_authenticated/workspace/")({
-  component: ProjectsPage,
+  component: DocumentsPage,
 });
 
-function ProjectsPage() {
-  return <ProjectsContent />;
+function DocumentsPage() {
+  return <DocumentsContent />;
 }
 
-function ProjectsContent() {
-  const navigate = useNavigate();
-  const projects = useQuery(api.projects.listUserProjects);
-  const createProject = useMutation(api.projects.createProject);
-  const deleteProject = useMutation(api.projects.deleteProject);
+function DocumentsContent() {
+  const documents = useQuery(api.documents.listUserDocuments);
+  const createDocument = useMutation(api.documents.createDocument);
+  const deleteDocument = useMutation(api.documents.deleteDocument);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [pendingName, setPendingName] = useState("");
+  const [pendingTitle, setPendingTitle] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-  const [deletingProjectId, setDeletingProjectId] = useState<Id<"projects"> | null>(null);
+  const [deletingDocumentId, setDeletingDocumentId] = useState<Id<"documents"> | null>(null);
 
-  const projectCount = projects?.length ?? 0;
-  const limitReached = projectCount >= PROJECT_LIMIT;
+  const documentCount = documents?.length ?? 0;
+  const limitReached = documentCount >= DOCUMENT_LIMIT;
 
-  const handleCreateProject = async () => {
-    const trimmedName = pendingName.trim();
-    if (trimmedName.length === 0) {
-      setErrorMessage("Project name is required.");
+  const handleCreateDocument = async () => {
+    const trimmedTitle = pendingTitle.trim();
+    if (trimmedTitle.length === 0) {
+      setErrorMessage("Document title is required.");
       return;
     }
 
     setErrorMessage(null);
     setIsCreating(true);
     try {
-      await createProject({ name: trimmedName });
-      toast.success(`Created project "${trimmedName}"`);
-      setPendingName("");
+      await createDocument({ title: trimmedTitle });
+      toast.success(`Created document "${trimmedTitle}"`);
+      setPendingTitle("");
       setIsDialogOpen(false);
     } catch (error) {
       if (error instanceof Error) {
         setErrorMessage(error.message);
       } else {
-        setErrorMessage("Failed to create project. Please try again.");
+        setErrorMessage("Failed to create document. Please try again.");
       }
-      toast.error("Failed to create project");
+      toast.error("Failed to create document");
     } finally {
       setIsCreating(false);
     }
   };
 
-  const handleDeleteProject = async (projectId: Id<"projects">) => {
+  const handleDeleteDocument = async (documentId: Id<"documents">) => {
     setErrorMessage(null);
-    setDeletingProjectId(projectId);
+    setDeletingDocumentId(documentId);
     try {
-      await deleteProject({ projectId });
-      toast.success("Project deleted");
+      await deleteDocument({ documentId });
+      toast.success("Document deleted");
     } catch (error) {
       if (error instanceof Error) {
         setErrorMessage(error.message);
       } else {
-        setErrorMessage("Failed to delete project. Please try again.");
+        setErrorMessage("Failed to delete document. Please try again.");
       }
-      toast.error("Failed to delete project");
+      toast.error("Failed to delete document");
     } finally {
-      setDeletingProjectId(null);
+      setDeletingDocumentId(null);
     }
   };
 
@@ -90,13 +89,13 @@ function ProjectsContent() {
     <div className="space-y-8">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">Projects</h1>
+          <h1 className="text-2xl font-semibold text-foreground">Documents</h1>
           <p className="text-sm text-muted-foreground">
-            Organize your research documents into dedicated spaces.
+            Your personal knowledge base for architecture patterns, decisions, and specs.
           </p>
         </div>
         <span className="rounded-full border border-border px-3 py-1 text-xs font-medium text-muted-foreground">
-          {projectCount}/{PROJECT_LIMIT} projects
+          {documentCount}/{DOCUMENT_LIMIT} documents
         </span>
       </header>
 
@@ -111,26 +110,26 @@ function ProjectsContent() {
           }}
           disabled={limitReached}
         >
-          New Project
+          New Document
         </Button>
         {limitReached ? (
-          <p className="text-sm text-muted-foreground">You have reached the project limit.</p>
+          <p className="text-sm text-muted-foreground">You have reached the document limit.</p>
         ) : (
           <p className="text-sm text-muted-foreground">
-            You can create {PROJECT_LIMIT - projectCount} more project
-            {PROJECT_LIMIT - projectCount === 1 ? "" : "s"}.
+            You can create {DOCUMENT_LIMIT - documentCount} more document
+            {DOCUMENT_LIMIT - documentCount === 1 ? "" : "s"}.
           </p>
         )}
       </div>
 
-      {projects === undefined ? (
+      {documents === undefined ? (
         <div className="rounded-lg border border-dashed px-4 py-12 text-center text-sm text-muted-foreground">
-          Loading projects…
+          Loading documents…
         </div>
-      ) : projects.length === 0 ? (
+      ) : documents.length === 0 ? (
         <EmptyState
-          title="Create your first project"
-          description="Start by creating a project to group your documents."
+          title="Create your first document"
+          description="Start building your personal knowledge base with architecture patterns, meeting notes, or technical specifications."
           action={
             <Button
               type="button"
@@ -139,30 +138,24 @@ function ProjectsContent() {
               }}
               disabled={limitReached}
             >
-              New Project
+              New Document
             </Button>
           }
         />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
-          {projects.map((project) => (
-            <ProjectCard
-              key={project._id}
-              project={project as Doc<"projects">}
-              onOpen={(selected) => {
-                navigate({
-                  to: "/workspace/$projectHandle",
-                  params: { projectHandle: selected.handle },
-                });
-              }}
-              onDelete={handleDeleteProject}
-              isDeleting={deletingProjectId === project._id}
+        <div className="space-y-3">
+          {documents.map((document) => (
+            <DocumentListItem
+              key={document._id}
+              document={document}
+              onDelete={handleDeleteDocument}
+              isDeleting={deletingDocumentId === document._id}
             />
           ))}
         </div>
       )}
 
-      <CreateProjectDialog
+      <CreateDocumentDialog
         open={isDialogOpen}
         onOpenChange={(open) => {
           if (!isCreating) {
@@ -170,9 +163,9 @@ function ProjectsContent() {
             setIsDialogOpen(open);
           }
         }}
-        projectName={pendingName}
-        onProjectNameChange={setPendingName}
-        onSubmit={handleCreateProject}
+        documentTitle={pendingTitle}
+        onDocumentTitleChange={setPendingTitle}
+        onSubmit={handleCreateDocument}
         isCreating={isCreating}
         disabled={limitReached}
         errorMessage={errorMessage}
@@ -181,47 +174,45 @@ function ProjectsContent() {
   );
 }
 
-type CreateProjectDialogProps = {
+type CreateDocumentDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  projectName: string;
-  onProjectNameChange: (value: string) => void;
+  documentTitle: string;
+  onDocumentTitleChange: (value: string) => void;
   onSubmit: () => void;
   isCreating: boolean;
   disabled: boolean;
   errorMessage: string | null;
 };
 
-function CreateProjectDialog({
+function CreateDocumentDialog({
   open,
   onOpenChange,
-  projectName,
-  onProjectNameChange,
+  documentTitle,
+  onDocumentTitleChange,
   onSubmit,
   isCreating,
   disabled,
   errorMessage,
-}: CreateProjectDialogProps) {
+}: CreateDocumentDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle>Create project</DialogTitle>
-          <DialogDescription>
-            Pick a name for your workspace. The handle will be generated automatically.
-          </DialogDescription>
+          <DialogTitle>Create document</DialogTitle>
+          <DialogDescription>Give your document a title to get started.</DialogDescription>
         </DialogHeader>
 
         {errorMessage ? <ValidationError message={errorMessage} /> : null}
 
         <label className="mt-3 flex flex-col gap-2 text-sm">
-          <span className="font-medium text-foreground">Project name</span>
+          <span className="font-medium text-foreground">Document title</span>
           <input
             className="rounded-md border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background focus:border-primary focus:ring-2 focus:ring-primary/40"
-            placeholder="e.g. Customer interviews"
-            value={projectName}
+            placeholder="e.g. Architecture Decision: Microservices vs Monolith"
+            value={documentTitle}
             onChange={(event) => {
-              onProjectNameChange(event.target.value);
+              onDocumentTitleChange(event.target.value);
             }}
             disabled={isCreating || disabled}
           />

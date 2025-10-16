@@ -30,7 +30,7 @@ function formatTimestamp(timestamp: number) {
   }
 }
 
-export const Route = createFileRoute("/_authenticated/workspace/$projectHandle/$docId/")({
+export const Route = createFileRoute("/_authenticated/workspace/$docId/")({
   component: DocumentEditorPage,
 });
 
@@ -47,7 +47,6 @@ type DocumentEditorLoaderProps = {
   docId: Id<"documents">;
 };
 
-// TODO: Project should not be necessary here. We can just get the document directly.
 function DocumentEditorLoader({ docId }: DocumentEditorLoaderProps) {
   const document = useQuery(api.documents.getDocument, { documentId: docId });
 
