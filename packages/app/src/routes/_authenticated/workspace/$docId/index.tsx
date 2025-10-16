@@ -6,13 +6,6 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
@@ -59,7 +52,6 @@ function DocumentEditor({ document }: DocumentEditorProps) {
   const [draftTitle, setDraftTitle] = useState(document.title);
   const [draftTags, setDraftTags] = useState<string[]>(document.tags);
   const [pendingTag, setPendingTag] = useState("");
-  const [draftStatus, setDraftStatus] = useState(document.status);
   const [isSaving, setIsSaving] = useState(false);
   const [conflictModalOpen, setConflictModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"preview" | "edit">("preview");
@@ -78,10 +70,7 @@ function DocumentEditor({ document }: DocumentEditorProps) {
     normalizedDraftTags.some((tag, index) => tag !== normalizedDocumentTags[index]);
 
   const isDirty =
-    draftBody !== document.body ||
-    draftTitle.trim() !== document.title ||
-    tagsChanged ||
-    draftStatus.trim() !== document.status;
+    draftBody !== document.body || draftTitle.trim() !== document.title || tagsChanged;
 
   const tagSuggestions = ["Meeting notes", "Research", "Reference", "Action Item", "Follow-up"];
   const lowercasedDraftTags = normalizedDraftTags.map((tag) => tag.toLowerCase());
@@ -126,10 +115,9 @@ function DocumentEditor({ document }: DocumentEditorProps) {
     setDraftTitle(document.title);
     setDraftTags(document.tags);
     setPendingTag("");
-    setDraftStatus(document.status);
     setIsTitleEditing(false);
     setConflictModalOpen(true);
-  }, [document.revisionToken, document.body, document.title, document.tags, document.status]);
+  }, [document.revisionToken, document.body, document.title, document.tags]);
 
   // Focus title input when entering edit mode
   useEffect(() => {
@@ -152,7 +140,6 @@ function DocumentEditor({ document }: DocumentEditorProps) {
         body: draftBody,
         title: draftTitle,
         tags: normalizedDraftTags,
-        status: draftStatus,
         revisionToken: document.revisionToken,
       });
 
@@ -204,8 +191,6 @@ function DocumentEditor({ document }: DocumentEditorProps) {
             </button>
           )}
         </div>
-
-        <div className="text-sm text-muted-foreground">Updated {updatedLabel}</div>
 
         {/* Metadata Section - Compact layout */}
         <div className="flex flex-wrap items-center gap-4">
@@ -264,27 +249,6 @@ function DocumentEditor({ document }: DocumentEditorProps) {
               </div>
             )}
           </div>
-
-          {/* Status */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Status:</span>
-            <Select
-              value={draftStatus}
-              onValueChange={(value) => setDraftStatus(value)}
-              disabled={isSaving}
-            >
-              <SelectTrigger className="w-[140px] h-8 border-border/40">
-                <SelectValue placeholder="Choose status" />
-              </SelectTrigger>
-              <SelectContent align="end">
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="in-progress">In Progress</SelectItem>
-                <SelectItem value="review">Review</SelectItem>
-                <SelectItem value="published">Published</SelectItem>
-                <SelectItem value="archived">Archived</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </div>
       </div>
 
@@ -305,6 +269,7 @@ function DocumentEditor({ document }: DocumentEditorProps) {
           </Button>
 
           <div className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground">Updated {updatedLabel}</span>
             <div className="flex items-center gap-2">
               {isSaving ? (
                 <span className="flex items-center gap-2 text-xs text-muted-foreground">
