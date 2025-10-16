@@ -25,11 +25,7 @@ export const Route = createFileRoute("/_authenticated/workspace/")({
 });
 
 function ProjectsPage() {
-  return (
-    <main>
-      <ProjectsContent />
-    </main>
-  );
+  return <ProjectsContent />;
 }
 
 function ProjectsContent() {
@@ -91,7 +87,7 @@ function ProjectsContent() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-foreground">Projects</h1>
