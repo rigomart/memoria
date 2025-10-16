@@ -57,7 +57,7 @@ Directly moves the North Star Metric.
 1. **MCP-Powered Automatic Retrieval**
    *Why it matters:* This is the entire value proposition. AI agents must be able to find and pull relevant specs, plans, and context on their own through MCP without the developer manually managing what context to provide. We split documents by headings, keep stable anchors, rank results using keywords with semantic fallback, respect freshness signals, and return snippets sized for AI context windows with citations.
 2. **Living Document Model**
-   *Why it matters:* Without a clear schema, the product fails. This model defines document types (feature specs, PRDs, implementation plans, ADRs, conventions), the frontmatter fields (`title`, `tags`, `topic`, `stability`, `updated`, `project`, `authority_level`), and how documents stay current as projects evolve.
+   *Why it matters:* Without a clear schema, the product fails. This model defines document types (feature specs, PRDs, implementation plans, ADRs, conventions), the frontmatter fields (`title`, `tags`, `topic`, `stability`, `updated`, `authority_level`), and how documents stay current as work evolves. Documents are organized by tags rather than rigid project hierarchies, enabling cross-project knowledge reuse.
 
 All other features connect to these two through clear interfaces.
 
@@ -76,7 +76,7 @@ Helps the core succeed and stay healthy.
 5. **Authoring Experience**
    *Impact:* Makes writing and editing smooth. Offers split-view editing, frontmatter linting, cross-document links, and backlinks.
 6. **Organization & Taxonomy**
-   *Impact:* Improves findability. Supports multiple projects, folders, tags, topic hubs, and favorites.
+   *Impact:* Improves findability. Supports tags, topic hubs, favorites, and optional collections/folders. Tag-based organization enables flexible cross-cutting knowledge structures without rigid project boundaries.
 7. **Versioning & Review**
    *Impact:* Enables safe collaboration. Includes history, diffs, rollback, suggestion mode, review queues, and an optional Git bridge.
 8. **Search UI for People**
