@@ -14,6 +14,9 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as documents from "../documents.js";
+import type * as handlers_mcp from "../handlers/mcp.js";
+import type * as http from "../http.js";
+import type * as tokens from "../tokens.js";
 import type * as utils from "../utils.js";
 
 /**
@@ -26,6 +29,9 @@ import type * as utils from "../utils.js";
  */
 declare const fullApi: ApiFromModules<{
   documents: typeof documents;
+  "handlers/mcp": typeof handlers_mcp;
+  http: typeof http;
+  tokens: typeof tokens;
   utils: typeof utils;
 }>;
 export declare const api: FilterApi<
