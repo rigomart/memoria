@@ -4,7 +4,6 @@ import type { Id } from "../_generated/dataModel";
 import { type ActionCtx, httpAction } from "../_generated/server";
 
 const BEARER_PREFIX = "Bearer ";
-const DEFAULT_MAX_BYTES = 64 * 1024;
 const ABSOLUTE_MAX_BYTES = 800 * 1024;
 
 const searchRequestSchema = z.object({
@@ -26,7 +25,6 @@ const docHandleSchema = z
 
 const getDocumentRequestSchema = z.object({
   doc_handle: docHandleSchema,
-  max_bytes: z.number().int().positive().max(ABSOLUTE_MAX_BYTES).optional(),
 });
 
 type AuthenticatedToken = {
@@ -145,7 +143,7 @@ export const mcpGetDocument = httpAction(async (ctx, request) => {
       return validationError(parsed.error);
     }
 
-    const { doc_handle, max_bytes } = parsed.data;
+    const { doc_handle } = parsed.data;
     const suffix = extractSuffix(doc_handle);
 
     void updateTokenLastUsed(ctx, auth.token.tokenId);
@@ -159,29 +157,14 @@ export const mcpGetDocument = httpAction(async (ctx, request) => {
       return Response.json({ error: "Document not found" }, { status: 404 });
     }
 
-    const requestedMaxBytes = max_bytes ?? DEFAULT_MAX_BYTES;
-    const finalMaxBytes = Math.min(requestedMaxBytes, ABSOLUTE_MAX_BYTES);
-
     const encoder = new TextEncoder();
     const bodyBytes = encoder.encode(document.body);
-    const isTruncated = bodyBytes.length > finalMaxBytes;
-    const truncatedBytes = isTruncated ? bodyBytes.slice(0, finalMaxBytes) : bodyBytes;
+    const isTruncated = bodyBytes.length > ABSOLUTE_MAX_BYTES;
+    const truncatedBytes = isTruncated ? bodyBytes.slice(0, ABSOLUTE_MAX_BYTES) : bodyBytes;
     const bodyForResponse = new TextDecoder().decode(truncatedBytes);
 
-    let frontmatter = "";
-    let bodyContent = bodyForResponse;
-
-    if (bodyContent.startsWith("---\n")) {
-      const endOfFrontmatter = bodyContent.indexOf("\n---\n", 4);
-      if (endOfFrontmatter !== -1) {
-        frontmatter = bodyContent.slice(4, endOfFrontmatter);
-        bodyContent = bodyContent.slice(endOfFrontmatter + 5);
-      }
-    }
-
     return Response.json({
-      frontmatter,
-      body: bodyContent,
+      body: bodyForResponse,
       updated: document.updated,
       full_size: bodyBytes.length,
       is_truncated: isTruncated,
