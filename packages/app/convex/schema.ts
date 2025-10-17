@@ -7,7 +7,6 @@ export default defineSchema({
     title: v.string(),
     body: v.string(),
     tags: v.array(v.string()),
-    status: v.string(),
     updated: v.number(),
     sizeBytes: v.number(),
     createdAt: v.number(),

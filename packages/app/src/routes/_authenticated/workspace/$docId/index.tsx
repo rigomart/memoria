@@ -1,34 +1,15 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
-import { EyeIcon, FilePenLineIcon, XIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { format } from "date-fns";
+import { CheckIcon, EyeIcon, PencilIcon, XIcon } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { ConflictModal } from "./-components/conflict-modal";
-
-const MAX_DOCUMENT_SIZE_BYTES = 800 * 1024;
-
-function formatTimestamp(timestamp: number) {
-  try {
-    return new Intl.DateTimeFormat(undefined, {
-      dateStyle: "medium",
-      timeStyle: "short",
-    }).format(new Date(timestamp));
-  } catch {
-    return new Date(timestamp).toLocaleString();
-  }
-}
 
 export const Route = createFileRoute("/_authenticated/workspace/$docId/")({
   component: DocumentEditorPage,
@@ -67,19 +48,28 @@ function DocumentEditorLoader({ docId }: DocumentEditorLoaderProps) {
 
 function DocumentEditor({ document }: DocumentEditorProps) {
   const updateDocument = useMutation(api.documents.updateDocument);
-  const [draftBody, setDraftBody] = useState(document.body);
-  const [draftTitle, setDraftTitle] = useState(document.title);
-  const [draftTags, setDraftTags] = useState<string[]>(document.tags);
+
+  // Combined draft state
+  const [draft, setDraft] = useState({
+    title: document.title,
+    body: document.body,
+    tags: document.tags,
+  });
+
   const [pendingTag, setPendingTag] = useState("");
-  const [draftStatus, setDraftStatus] = useState(document.status);
+  const [isAddingTag, setIsAddingTag] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   const [conflictModalOpen, setConflictModalOpen] = useState(false);
+
   const localRevisionToken = useRef(document.revisionToken);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const tagInputRef = useRef<HTMLInputElement>(null);
 
   const normalizeTags = (tags: string[]) =>
     tags.map((tag) => tag.trim()).filter((tag) => tag.length > 0);
 
-  const normalizedDraftTags = normalizeTags(draftTags);
+  const normalizedDraftTags = normalizeTags(draft.tags);
   const normalizedDocumentTags = normalizeTags(document.tags);
 
   const tagsChanged =
@@ -87,10 +77,7 @@ function DocumentEditor({ document }: DocumentEditorProps) {
     normalizedDraftTags.some((tag, index) => tag !== normalizedDocumentTags[index]);
 
   const isDirty =
-    draftBody !== document.body ||
-    draftTitle.trim() !== document.title ||
-    tagsChanged ||
-    draftStatus.trim() !== document.status;
+    draft.body !== document.body || draft.title.trim() !== document.title || tagsChanged;
 
   const tagSuggestions = ["Meeting notes", "Research", "Reference", "Action Item", "Follow-up"];
   const lowercasedDraftTags = normalizedDraftTags.map((tag) => tag.toLowerCase());
@@ -104,154 +91,188 @@ function DocumentEditor({ document }: DocumentEditorProps) {
       return;
     }
 
-    setDraftTags((previous) => {
-      if (previous.some((tag) => tag.toLowerCase() === normalizedTag.toLowerCase())) {
-        return previous;
+    setDraft((prev) => {
+      if (prev.tags.some((tag) => tag.toLowerCase() === normalizedTag.toLowerCase())) {
+        return prev;
       }
-      return [...previous, normalizedTag];
+      return { ...prev, tags: [...prev.tags, normalizedTag] };
     });
     setPendingTag("");
+    setIsAddingTag(false);
   };
 
   const removeTagAtIndex = (indexToRemove: number) => {
-    setDraftTags((previous) => previous.filter((_, index) => index !== indexToRemove));
+    setDraft((prev) => ({
+      ...prev,
+      tags: prev.tags.filter((_, index) => index !== indexToRemove),
+    }));
   };
 
   const commitPendingTag = () => {
     if (pendingTag.trim().length === 0) {
       setPendingTag("");
+      setIsAddingTag(false);
       return;
     }
     addTag(pendingTag);
+    setIsAddingTag(false);
   };
 
+  // Focus tag input when adding
+  useEffect(() => {
+    if (isAddingTag && tagInputRef.current) {
+      tagInputRef.current.focus();
+    }
+  }, [isAddingTag]);
+
+  // Detect external changes (conflicts)
   useEffect(() => {
     if (localRevisionToken.current === document.revisionToken) {
-      return;
+      return; // Our own save, ignore
     }
 
-    // Update local state with remote changes when a conflict is detected
-    setDraftBody(document.body);
-    setDraftTitle(document.title);
-    setDraftTags(document.tags);
+    // External change detected - update local state and show conflict modal
+    setDraft({
+      title: document.title,
+      body: document.body,
+      tags: document.tags,
+    });
     setPendingTag("");
-    setDraftStatus(document.status);
+    setIsAddingTag(false);
+    setSaveError(false);
     setConflictModalOpen(true);
-  }, [document.revisionToken, document.body, document.title, document.tags, document.status]);
+  }, [document.revisionToken, document.body, document.title, document.tags]);
 
-  const limitKilobytes = Math.round((MAX_DOCUMENT_SIZE_BYTES / 1024) * 10) / 10;
-  const savedSizeKilobytes = Math.round((document.sizeBytes / 1024) * 10) / 10;
+  const updatedLabel = format(new Date(document.updated), "PPp");
 
-  const updatedLabel = formatTimestamp(document.updated);
-
-  const handleSave = async () => {
-    if (!isDirty || isSaving) {
-      return;
+  // Auto-save function
+  const performSave = useCallback(async () => {
+    if (!isDirty || isSaving || saveError) {
+      return; // Don't retry if there's already an error
     }
+
     setIsSaving(true);
     try {
       const updatedDocument = await updateDocument({
         documentId: document._id,
-        body: draftBody,
-        title: draftTitle,
+        body: draft.body,
+        title: draft.title,
         tags: normalizedDraftTags,
-        status: draftStatus,
         revisionToken: document.revisionToken,
       });
 
       if (updatedDocument) {
         localRevisionToken.current = updatedDocument.revisionToken;
-        setDraftTags(updatedDocument.tags);
+        setDraft((prev) => ({ ...prev, tags: updatedDocument.tags }));
       }
-
-      toast.success("Document saved");
     } catch (_error) {
+      setSaveError(true);
       toast.error("Failed to save document");
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [
+    isDirty,
+    isSaving,
+    saveError,
+    updateDocument,
+    document._id,
+    document.revisionToken,
+    draft.body,
+    draft.title,
+    normalizedDraftTags,
+  ]);
+
+  // Debounced auto-save on draft changes
+  useEffect(() => {
+    if (!isDirty) {
+      return;
+    }
+
+    // Clear error state when user continues editing (new changes = retry)
+    if (saveError) {
+      setSaveError(false);
+    }
+
+    // Clear existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // Set new timeout for 500ms
+    saveTimeoutRef.current = setTimeout(() => {
+      performSave();
+    }, 500);
+
+    // Cleanup
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [isDirty, performSave, saveError]);
 
   return (
-    <div className="flex w-full flex-col gap-4">
-      <div className="rounded-lg border border-border/40 bg-background/60 backdrop-blur-md">
-        <div className="grid gap-3 px-4 py-3 lg:grid-cols-[1fr_2fr_1fr] md:grid-cols-1">
-          <div className="space-y-2 lg:space-y-3">
-            <div className="space-y-1">
-              <label htmlFor="title" className="text-xs font-medium text-foreground">
-                Title
-              </label>
+    <div className="flex w-full flex-col gap-6">
+      {/* Title Section - Always editable input */}
+      <div className="space-y-1">
+        <input
+          type="text"
+          value={draft.title}
+          onChange={(event) => setDraft((prev) => ({ ...prev, title: event.target.value }))}
+          placeholder="Untitled Document"
+          disabled={isSaving}
+          className="w-full bg-transparent text-4xl font-bold text-foreground outline-none border-b-2 border-transparent hover:border-border/40 focus:border-primary pb-1 transition-colors"
+        />
+
+        {/* Tags - Minimal inline */}
+        <div className="flex flex-wrap items-center gap-2">
+          {draft.tags.map((tag, index) => (
+            <button
+              key={tag}
+              type="button"
+              className="inline-flex items-center gap-1 rounded-full bg-muted/40 px-2 py-0.5 text-xs text-muted-foreground transition hover:bg-muted hover:text-foreground"
+              onClick={() => removeTagAtIndex(index)}
+              disabled={isSaving}
+            >
+              <span>{tag}</span>
+              <XIcon className="size-2.5" aria-hidden />
+              <span className="sr-only">Remove {tag}</span>
+            </button>
+          ))}
+
+          {isAddingTag ? (
+            <div className="relative">
               <input
-                id="title"
-                className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm outline-none ring-offset-background focus:border-primary focus:ring-2 focus:ring-primary/40"
-                value={draftTitle}
-                onChange={(event) => {
-                  setDraftTitle(event.target.value);
+                ref={tagInputRef}
+                id="tag-input"
+                className="min-w-[120px] rounded-md border border-border/50 bg-background px-2 py-0.5 text-xs outline-none placeholder:text-muted-foreground/60 focus:border-primary"
+                placeholder="Add tag..."
+                value={pendingTag}
+                onChange={(event) => setPendingTag(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === "," || event.key === "Tab") {
+                    event.preventDefault();
+                    commitPendingTag();
+                  } else if (event.key === "Escape") {
+                    setPendingTag("");
+                    setIsAddingTag(false);
+                  }
                 }}
+                onBlur={() => commitPendingTag()}
                 disabled={isSaving}
               />
-            </div>
-          </div>
-
-          <div className="space-y-2 lg:space-y-3">
-            <div className="space-y-1">
-              <label htmlFor="tag-input" className="text-xs font-medium text-foreground">
-                Tags
-              </label>
-              <div className="rounded-md border border-border/60 bg-background/70 px-3 py-1.5">
-                <div className="flex flex-wrap items-center gap-1.5 text-sm">
-                  {draftTags.map((tag, index) => (
-                    <button
-                      key={tag}
-                      type="button"
-                      className="inline-flex items-center gap-1 rounded-full border border-border/50 bg-background/80 px-2 py-0.5 text-xs font-medium text-foreground transition hover:border-primary/60 hover:bg-primary/10"
-                      onClick={() => {
-                        removeTagAtIndex(index);
-                      }}
-                      disabled={isSaving}
-                    >
-                      <span>{tag}</span>
-                      <XIcon className="size-3" aria-hidden />
-                      <span className="sr-only">Remove {tag}</span>
-                    </button>
-                  ))}
-                  <input
-                    id="tag-input"
-                    className="min-w-[100px] flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/70"
-                    placeholder={draftTags.length === 0 ? "Add tag…" : ""}
-                    value={pendingTag}
-                    onChange={(event) => {
-                      setPendingTag(event.target.value);
-                    }}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === "," || event.key === "Tab") {
-                        event.preventDefault();
-                        commitPendingTag();
-                      } else if (
-                        event.key === "Backspace" &&
-                        pendingTag.length === 0 &&
-                        draftTags.length > 0
-                      ) {
-                        event.preventDefault();
-                        removeTagAtIndex(draftTags.length - 1);
-                      }
-                    }}
-                    onBlur={() => {
-                      commitPendingTag();
-                    }}
-                    disabled={isSaving}
-                  />
-                </div>
-              </div>
-              {availableSuggestions.length > 0 ? (
-                <div className="flex flex-wrap gap-1.5">
+              {availableSuggestions.length > 0 && pendingTag.length === 0 && (
+                <div className="absolute top-full left-0 mt-1 flex flex-wrap gap-1 rounded-md border border-border/50 bg-background p-2 shadow-lg z-10">
                   {availableSuggestions.map((suggestion) => (
                     <button
                       key={suggestion}
                       type="button"
-                      className="rounded-full border border-border/40 bg-background/80 px-2 py-0.5 text-xs font-medium text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
-                      onClick={() => {
+                      className="rounded-full bg-muted/40 px-2 py-0.5 text-xs text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                      onMouseDown={(e) => {
+                        e.preventDefault(); // Prevent blur
                         addTag(suggestion);
+                        setIsAddingTag(false);
                       }}
                       disabled={isSaving}
                     >
@@ -259,87 +280,87 @@ function DocumentEditor({ document }: DocumentEditorProps) {
                     </button>
                   ))}
                 </div>
-              ) : null}
+              )}
             </div>
-          </div>
-
-          <aside className="space-y-2 rounded-md border border-border/50 bg-background/70 p-3">
-            <div className="space-y-1.5">
-              <label htmlFor="status" className="text-xs font-medium text-foreground">
-                Status
-              </label>
-              <Select
-                value={draftStatus}
-                onValueChange={(value) => {
-                  setDraftStatus(value);
-                }}
-                disabled={isSaving}
-              >
-                <SelectTrigger id="status" className="w-full h-8">
-                  <SelectValue placeholder="Choose status" />
-                </SelectTrigger>
-                <SelectContent align="end">
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="in-progress">In Progress</SelectItem>
-                  <SelectItem value="review">Review</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </aside>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsAddingTag(true)}
+              disabled={isSaving}
+              className="inline-flex items-center gap-1 rounded-full bg-muted/20 px-2 py-0.5 text-xs text-muted-foreground transition hover:bg-muted/40 hover:text-foreground"
+            >
+              <span>+</span>
+              <span>Add tag</span>
+            </button>
+          )}
         </div>
       </div>
 
-      <Tabs defaultValue="edit" className="gap-3 max-w-6xl mx-auto w-full">
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/60 bg-background/70 px-3 py-2">
-          <TabsList className="bg-background/80">
-            <TabsTrigger value="edit" className="px-3">
-              <FilePenLineIcon className="size-4" aria-hidden />
+      <Tabs defaultValue="preview">
+        <div className="flex gap-2 w-full items-center justify-between">
+          <TabsList>
+            <TabsTrigger value="edit">
+              <PencilIcon className="size-4" />
               Edit
             </TabsTrigger>
-            <TabsTrigger value="preview" className="px-3">
-              <EyeIcon className="size-4" aria-hidden />
+            <TabsTrigger value="preview">
+              <EyeIcon className="size-4" />
               Preview
             </TabsTrigger>
           </TabsList>
-          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-            {savedSizeKilobytes !== null ? (
-              <span className="inline-flex items-center rounded-full border border-border/50 bg-background/70 px-2 py-1">
-                {savedSizeKilobytes} KB of {limitKilobytes} KB
-              </span>
-            ) : null}
-            <span className="inline-flex items-center rounded-full border border-border/50 bg-background/70 px-2 py-1">
-              Updated {updatedLabel}
-            </span>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={handleSave}
-              disabled={isSaving || !isDirty}
-            >
-              {isSaving ? "Saving…" : isDirty ? "Save changes" : "Saved"}
-            </Button>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground">Updated {updatedLabel}</span>
+            <div className="flex items-center gap-2">
+              {isSaving ? (
+                <span className="flex items-center gap-2 text-xs font-medium text-amber-600">
+                  <Spinner className="size-3" />
+                  Saving...
+                </span>
+              ) : saveError ? (
+                <span className="flex items-center gap-2 text-xs font-medium text-red-600">
+                  <XIcon className="size-3" />
+                  Save failed
+                </span>
+              ) : isDirty ? (
+                <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                  Editing...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2 text-xs font-medium text-green-600">
+                  <CheckIcon className="size-3" />
+                  Saved
+                </span>
+              )}
+            </div>
           </div>
         </div>
-        <TabsContent value="edit" className="mt-0">
-          <div className="mx-auto w-full overflow-hidden rounded-2xl border border-border/50 bg-background/60 shadow-lg">
+
+        <TabsContent value="edit">
+          <div className="relative w-full overflow-hidden rounded-lg border-2 border-primary/30 bg-background/40">
+            <div className="absolute right-3 top-3 z-10">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/50 bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                <PencilIcon className="size-3" />
+                Edit Mode
+              </span>
+            </div>
             <textarea
-              value={draftBody}
-              onChange={(event) => {
-                const nextBody = event.target.value;
-                setDraftBody(nextBody);
-              }}
-              className="min-h-[60vh] w-full resize-y bg-background/70 px-6 py-6 font-mono text-[0.95rem] leading-7 text-foreground/90 outline-none transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+              value={draft.body}
+              onChange={(event) => setDraft((prev) => ({ ...prev, body: event.target.value }))}
+              className="min-h-[60vh] w-full resize-y bg-transparent px-6 py-6 font-mono text-[0.95rem] leading-7 text-foreground outline-none focus-visible:outline-none"
               spellCheck={false}
+              placeholder="Start writing..."
             />
           </div>
         </TabsContent>
-        <TabsContent value="preview" className="mt-0">
-          <div className="mx-auto w-full overflow-hidden rounded-2xl border border-border/50 bg-background/60 shadow-lg">
-            <article className="min-h-[60vh] space-y-5 px-6 py-6 text-[0.95rem] leading-7 text-muted-foreground">
-              <Streamdown>{draftBody}</Streamdown>
+
+        <TabsContent value="preview">
+          <div className="relative w-full overflow-hidden rounded-lg border border-border/30 bg-background/40">
+            <article className="min-h-[60vh] space-y-5 px-6 py-6 text-[0.95rem] leading-7 text-foreground">
+              {draft.body ? (
+                <Streamdown>{draft.body}</Streamdown>
+              ) : (
+                <p className="text-muted-foreground italic">Nothing to preview yet...</p>
+              )}
             </article>
           </div>
         </TabsContent>
@@ -347,12 +368,8 @@ function DocumentEditor({ document }: DocumentEditorProps) {
 
       <ConflictModal
         open={conflictModalOpen}
-        onDismiss={() => {
-          setConflictModalOpen(false);
-        }}
-        onReload={() => {
-          setConflictModalOpen(false);
-        }}
+        onDismiss={() => setConflictModalOpen(false)}
+        onReload={() => setConflictModalOpen(false)}
       />
     </div>
   );

@@ -33,7 +33,6 @@ export const createDocument = mutation({
       title,
       body: initialBody,
       tags: [],
-      status: "draft",
       updated: now,
       sizeBytes: calculateSize(initialBody),
       createdAt: now,
@@ -50,7 +49,6 @@ export const updateDocument = mutation({
     body: v.string(),
     title: v.string(),
     tags: v.array(v.string()),
-    status: v.string(),
     revisionToken: v.string(),
   },
   handler: async (ctx, args) => {
@@ -82,7 +80,6 @@ export const updateDocument = mutation({
       body: args.body,
       title: args.title.trim(),
       tags: args.tags,
-      status: args.status.trim(),
       updated: now,
       sizeBytes: size,
       revisionToken: nextRevisionToken,
