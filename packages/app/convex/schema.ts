@@ -16,7 +16,7 @@ export default defineSchema({
   })
     .index("by_userId", ["userId"])
     .index("by_userId_updated", ["userId", "updated"])
-    .index("by_suffix", ["suffix"]), // Unique suffix for document lookups
+    .index("by_suffix", ["suffix"]),
 
   tokens: defineTable({
     userId: v.string(),

@@ -1,5 +1,6 @@
 import { ConvexError, v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import type { Doc } from "./_generated/dataModel";
+import { internalQuery, mutation, type QueryCtx, query } from "./_generated/server";
 import { generateDocumentSlugAndSuffix, requireUserId } from "./utils";
 
 const DOCUMENT_LIMIT = 10;
@@ -34,7 +35,7 @@ export const createDocument = mutation({
     // Generate slug and suffix for new document
     const { slug, suffix } = generateDocumentSlugAndSuffix(title, existingSuffixes);
 
-    const docId = await ctx.db.insert("documents", {
+    await ctx.db.insert("documents", {
       userId,
       title,
       slug,
@@ -46,8 +47,6 @@ export const createDocument = mutation({
       createdAt: now,
       revisionToken: crypto.randomUUID(),
     });
-
-    return await ctx.db.get(docId);
   },
 });
 
@@ -183,100 +182,185 @@ export const getDocumentBySuffix = query({
   },
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx);
-    const document = await ctx.db
-      .query("documents")
-      .withIndex("by_suffix", (q) => q.eq("suffix", args.suffix))
-      .first();
-
-    if (!document || document.userId !== userId) {
-      return null;
-    }
-
-    return document;
+    return getDocumentBySuffixInternal(ctx, { userId, suffix: args.suffix });
   },
 });
 
 export const searchDocuments = query({
   args: {
-    q: v.string(),
-    top_k: v.optional(v.number()),
+    query: v.string(),
+    limit: v.optional(v.number()),
     sort: v.optional(v.union(v.literal("relevance"), v.literal("recency"))),
   },
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx);
-    const topK = Math.min(args.top_k ?? 5, 10); // Default 5, max 10
-    const sort = args.sort ?? "relevance";
-
-    // Get all user's documents (max 10 per user for performance)
-    const documents = await ctx.db
-      .query("documents")
-      .withIndex("by_userId_updated", (q) => q.eq("userId", userId))
-      .take(10);
-
-    if (!args.q.trim()) {
-      // Return most recent if no query
-      return documents
-        .sort((a, b) => b.updated - a.updated)
-        .slice(0, topK)
-        .map((doc) => ({
-          _id: doc._id,
-          compoundSlug: `${doc.slug}-${doc.suffix}`, // For UI/URLs
-          title: doc.title,
-          updated: doc.updated,
-          sizeBytes: doc.sizeBytes,
-        }));
-    }
-
-    // Normalize query and split into tokens
-    const queryTokens = args.q
-      .toLowerCase()
-      .split(/[-\s]+/)
-      .filter((token) => token.length > 0);
-
-    // Score and filter documents
-    const scoredDocs = documents
-      .filter((doc) => {
-        const compoundSlug = `${doc.slug}-${doc.suffix}`.toLowerCase();
-        const slugTokens = compoundSlug.split(/[-\s]+/);
-        // ALL query tokens must appear in slug tokens (AND behavior)
-        return queryTokens.every((qToken) =>
-          slugTokens.some((slugToken) => slugToken.includes(qToken)),
-        );
-      })
-      .map((doc) => {
-        const compoundSlug = `${doc.slug}-${doc.suffix}`.toLowerCase();
-        let score = 0;
-
-        // Ranking: exact match (1000) > starts-with (500) > contains (100)
-        if (compoundSlug === args.q.toLowerCase()) {
-          score = 1000;
-        } else if (compoundSlug.startsWith(args.q.toLowerCase())) {
-          score = 500;
-        } else {
-          score = 100;
-        }
-
-        return {
-          _id: doc._id,
-          compoundSlug: `${doc.slug}-${doc.suffix}`, // For UI/URLs
-          title: doc.title,
-          updated: doc.updated,
-          sizeBytes: doc.sizeBytes,
-          score,
-        };
-      });
-
-    // Sort by score then by compound slug for tie-breaking
-    scoredDocs.sort((a, b) => {
-      if (sort === "recency") {
-        return b.updated - a.updated;
-      }
-      if (a.score !== b.score) {
-        return b.score - a.score;
-      }
-      return a.compoundSlug.localeCompare(b.compoundSlug); // Stable tiebreak by compound slug
+    return searchDocumentsInternal(ctx, {
+      userId,
+      query: args.query,
+      limit: args.limit,
+      sort: args.sort,
     });
-
-    return scoredDocs.slice(0, topK);
   },
 });
+
+export const getDocumentBySuffixForUser = internalQuery({
+  args: {
+    userId: v.string(),
+    suffix: v.string(),
+  },
+  handler: async (ctx, args) => getDocumentBySuffixInternal(ctx, args),
+});
+
+export const searchDocumentsForUser = internalQuery({
+  args: {
+    userId: v.string(),
+    query: v.string(),
+    limit: v.optional(v.number()),
+    sort: v.optional(v.union(v.literal("relevance"), v.literal("recency"))),
+  },
+  handler: async (ctx, args) => searchDocumentsInternal(ctx, args),
+});
+
+type GetDocumentBySuffixParams = {
+  userId: string;
+  suffix: string;
+};
+
+type SearchDocumentsParams = {
+  userId: string;
+  query: string;
+  limit?: number;
+  sort?: "relevance" | "recency";
+};
+
+type RankedDocument = {
+  _id: Doc<"documents">["_id"];
+  compoundSlug: string;
+  title: string;
+  updated: number;
+  sizeBytes: number;
+  score: number;
+};
+
+async function getDocumentBySuffixInternal(
+  ctx: QueryCtx,
+  { userId, suffix }: GetDocumentBySuffixParams,
+) {
+  const document = await ctx.db
+    .query("documents")
+    .withIndex("by_suffix", (q) => q.eq("suffix", suffix))
+    .first();
+
+  if (!document || document.userId !== userId) {
+    return null;
+  }
+
+  return document;
+}
+
+async function searchDocumentsInternal(ctx: QueryCtx, args: SearchDocumentsParams) {
+  const limit = Math.min(args.limit ?? 5, DOCUMENT_LIMIT);
+  const sort = args.sort ?? "relevance";
+
+  const documents = await ctx.db
+    .query("documents")
+    .withIndex("by_userId_updated", (q) => q.eq("userId", args.userId))
+    .take(DOCUMENT_LIMIT);
+
+  const trimmedQuery = args.query.trim();
+  if (!trimmedQuery) {
+    return documents
+      .sort((a, b) => b.updated - a.updated)
+      .slice(0, limit)
+      .map((doc) => ({
+        _id: doc._id,
+        compoundSlug: `${doc.slug}-${doc.suffix}`,
+        title: doc.title,
+        updated: doc.updated,
+        sizeBytes: doc.sizeBytes,
+      }));
+  }
+
+  const normalizedQuery = trimmedQuery.toLowerCase();
+  const queryTokens = normalizedQuery.split(/[-\s]+/).filter((token) => token.length > 0);
+
+  const scoredDocs: RankedDocument[] = [];
+
+  for (const doc of documents) {
+    const scored = scoreDocument(doc, queryTokens);
+    if (scored) {
+      scoredDocs.push(scored);
+    }
+  }
+
+  scoredDocs.sort((a, b) => {
+    if (sort === "recency") {
+      return b.updated - a.updated;
+    }
+    if (a.score !== b.score) {
+      return b.score - a.score;
+    }
+    if (a.updated !== b.updated) {
+      return b.updated - a.updated;
+    }
+    return a.compoundSlug.localeCompare(b.compoundSlug);
+  });
+
+  return scoredDocs.slice(0, limit).map(({ score: _score, ...doc }) => doc);
+}
+
+function scoreDocument(doc: Doc<"documents">, queryTokens: string[]): RankedDocument | null {
+  const compoundSlug = `${doc.slug}-${doc.suffix}`;
+  const slugLower = compoundSlug.toLowerCase();
+  const titleLower = doc.title.toLowerCase();
+  const tagsLower = doc.tags.map((tag) => tag.toLowerCase());
+
+  let score = 0;
+
+  for (const token of queryTokens) {
+    let matched = false;
+
+    if (slugLower === token) {
+      score += 100;
+      matched = true;
+    } else if (slugLower.startsWith(token)) {
+      score += 60;
+      matched = true;
+    } else if (slugLower.includes(token)) {
+      score += 30;
+      matched = true;
+    }
+
+    if (titleLower === token) {
+      score += 50;
+      matched = true;
+    } else if (titleLower.startsWith(token)) {
+      score += 25;
+      matched = true;
+    } else if (titleLower.includes(token)) {
+      score += 10;
+      matched = true;
+    }
+
+    const tagMatch = tagsLower.find((tag) => tag === token || tag.includes(token));
+    if (tagMatch) {
+      score += tagMatch === token ? 15 : 10;
+      matched = true;
+    }
+
+    if (!matched) {
+      return null;
+    }
+
+    score += 5;
+  }
+
+  return {
+    _id: doc._id,
+    compoundSlug,
+    title: doc.title,
+    updated: doc.updated,
+    sizeBytes: doc.sizeBytes,
+    score,
+  };
+}

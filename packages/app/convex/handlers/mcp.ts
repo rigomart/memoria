@@ -1,51 +1,119 @@
-import { api, internal } from "../_generated/api";
-import { httpAction } from "../_generated/server";
+import { z } from "zod/v3";
+import { internal } from "../_generated/api";
+import type { Id } from "../_generated/dataModel";
+import { type ActionCtx, httpAction } from "../_generated/server";
+
+const BEARER_PREFIX = "Bearer ";
+const DEFAULT_MAX_BYTES = 64 * 1024;
+const ABSOLUTE_MAX_BYTES = 800 * 1024;
+
+const searchRequestSchema = z.object({
+  query: z.string().trim().min(1, "Missing or invalid 'query' parameter."),
+  limit: z.number().int().positive().max(10).optional(),
+  sort: z.enum(["recency", "relevance"]).optional(),
+});
+
+const docHandleSchema = z
+  .string()
+  .trim()
+  .refine(
+    (value) => {
+      const lastDashIndex = value.lastIndexOf("-");
+      return lastDashIndex > 0 && lastDashIndex < value.length - 1;
+    },
+    { message: "Invalid document handle format." },
+  );
+
+const getDocumentRequestSchema = z.object({
+  doc_handle: docHandleSchema,
+  max_bytes: z.number().int().positive().max(ABSOLUTE_MAX_BYTES).optional(),
+});
+
+type AuthenticatedToken = {
+  userId: string;
+  tokenId: Id<"tokens">;
+};
+
+type AuthResult = { ok: true; token: AuthenticatedToken } | { ok: false; response: Response };
+
+const unauthorized = (message: string) => Response.json({ error: message }, { status: 401 });
+
+const badRequest = (message: string) => Response.json({ error: message }, { status: 400 });
+
+function validationError(error: z.ZodError) {
+  const message = error.issues[0]?.message ?? "Invalid request body.";
+  return badRequest(message);
+}
+
+function extractSuffix(handle: string): string {
+  return handle.slice(handle.lastIndexOf("-") + 1);
+}
+
+async function authenticateRequest(ctx: ActionCtx, request: Request): Promise<AuthResult> {
+  const authHeader = request.headers.get("Authorization");
+  if (!authHeader || !authHeader.startsWith(BEARER_PREFIX)) {
+    return {
+      ok: false,
+      response: unauthorized(
+        "Missing or invalid Authorization header. Use: Authorization: Bearer {token}",
+      ),
+    };
+  }
+
+  const token = authHeader.slice(BEARER_PREFIX.length).trim();
+  if (!token) {
+    return { ok: false, response: unauthorized("Token is missing or empty.") };
+  }
+
+  const tokenInfo = await ctx.runQuery(internal.tokens.validateToken, {
+    plainToken: token,
+  });
+
+  if (!tokenInfo) {
+    return { ok: false, response: unauthorized("Invalid or expired token.") };
+  }
+
+  return { ok: true, token: tokenInfo };
+}
+
+async function updateTokenLastUsed(ctx: ActionCtx, tokenId: Id<"tokens">) {
+  try {
+    await ctx.runMutation(internal.tokens.updateTokenLastUsed, { tokenId });
+  } catch (error) {
+    console.error("Failed to update token lastUsedAt:", error);
+  }
+}
 
 export const mcpSearch = httpAction(async (ctx, request) => {
   try {
-    // Extract PAT from Authorization header
-    const authHeader = request.headers.get("Authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return Response.json(
-        { error: "Missing or invalid Authorization header. Use: Authorization: Bearer {token}" },
-        { status: 401 },
-      );
+    const auth = await authenticateRequest(ctx, request);
+    if (!auth.ok) {
+      return auth.response;
     }
 
-    const token = authHeader.substring(7); // Remove "Bearer " prefix
-    const tokenValidation = await ctx.runQuery(internal.tokens.validateToken, {
-      plainToken: token,
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return badRequest("Invalid JSON body.");
+    }
+
+    const parsed = searchRequestSchema.safeParse(body);
+    if (!parsed.success) {
+      return validationError(parsed.error);
+    }
+
+    void updateTokenLastUsed(ctx, auth.token.tokenId);
+
+    const searchResults = await ctx.runQuery(internal.documents.searchDocumentsForUser, {
+      userId: auth.token.userId,
+      query: parsed.data.query,
+      limit: parsed.data.limit,
+      sort: parsed.data.sort,
     });
 
-    if (!tokenValidation) {
-      return Response.json({ error: "Invalid or expired token" }, { status: 401 });
-    }
-
-    // Update lastUsedAt asynchronously (fire and forget)
-    ctx
-      .runMutation(internal.tokens.updateTokenLastUsed, {
-        tokenId: tokenValidation.tokenId,
-      })
-      .catch(console.error);
-
-    // Parse request body
-    const requestBody = await request.json();
-    const { q, top_k, sort } = requestBody;
-
-    if (!q || typeof q !== "string") {
-      return Response.json({ error: "Missing or invalid 'q' parameter" }, { status: 400 });
-    }
-
-    // Call searchDocuments query for authenticated user
-    const searchResults = await ctx.runQuery(api.documents.searchDocuments, {
-      q,
-      top_k: typeof top_k === "number" ? top_k : undefined,
-      sort: sort === "recency" || sort === "relevance" ? sort : undefined,
-    });
-
-    // Return results in MCP format
     const mcpResults = searchResults.map((doc) => ({
-      doc_handle: doc.compoundSlug, // Use compound slug as document handle
+      doc_handle: doc.compoundSlug,
       title: doc.title,
       updated: doc.updated,
       approx_size: doc.sizeBytes,
@@ -60,91 +128,62 @@ export const mcpSearch = httpAction(async (ctx, request) => {
 
 export const mcpGetDocument = httpAction(async (ctx, request) => {
   try {
-    // Extract PAT from Authorization header
-    const authHeader = request.headers.get("Authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return Response.json(
-        { error: "Missing or invalid Authorization header. Use: Authorization: Bearer {token}" },
-        { status: 401 },
-      );
+    const auth = await authenticateRequest(ctx, request);
+    if (!auth.ok) {
+      return auth.response;
     }
 
-    const token = authHeader.substring(7); // Remove "Bearer " prefix
-    const tokenValidation = await ctx.runQuery(internal.tokens.validateToken, {
-      plainToken: token,
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return badRequest("Invalid JSON body.");
+    }
+
+    const parsed = getDocumentRequestSchema.safeParse(body);
+    if (!parsed.success) {
+      return validationError(parsed.error);
+    }
+
+    const { doc_handle, max_bytes } = parsed.data;
+    const suffix = extractSuffix(doc_handle);
+
+    void updateTokenLastUsed(ctx, auth.token.tokenId);
+
+    const document = await ctx.runQuery(internal.documents.getDocumentBySuffixForUser, {
+      userId: auth.token.userId,
+      suffix,
     });
-
-    if (!tokenValidation) {
-      return Response.json({ error: "Invalid or expired token" }, { status: 401 });
-    }
-
-    // Update lastUsedAt asynchronously (fire and forget)
-    ctx
-      .runMutation(internal.tokens.updateTokenLastUsed, {
-        tokenId: tokenValidation.tokenId,
-      })
-      .catch(console.error);
-
-    // Parse request body
-    const requestBody = await request.json();
-    const { doc_handle, max_bytes } = requestBody;
-
-    if (!doc_handle || typeof doc_handle !== "string") {
-      return Response.json({ error: "Missing or invalid 'doc_handle' parameter" }, { status: 400 });
-    }
-
-    // Extract suffix from compound slug (last 8 chars after last dash)
-    const lastDashIndex = doc_handle.lastIndexOf("-");
-    if (lastDashIndex === -1 || lastDashIndex === doc_handle.length - 1) {
-      return Response.json({ error: "Invalid document handle format" }, { status: 400 });
-    }
-
-    const suffix = doc_handle.slice(lastDashIndex + 1);
-
-    // Set size limits (default 64KB, max 800KB as per plan)
-    const defaultMaxBytes = 64 * 1024; // 64KB
-    const absoluteMaxBytes = 800 * 1024; // 800KB
-    const requestedMaxBytes =
-      max_bytes && typeof max_bytes === "number" ? max_bytes : defaultMaxBytes;
-    const finalMaxBytes = Math.min(requestedMaxBytes, absoluteMaxBytes);
-
-    // Get document by suffix
-    const document = await ctx.runQuery(api.documents.getDocumentBySuffix, { suffix });
 
     if (!document || !document.body) {
       return Response.json({ error: "Document not found" }, { status: 404 });
     }
 
-    // Check if document content needs to be truncated
-    const bodyBytes = new TextEncoder().encode(document.body).length;
-    const isTruncated = bodyBytes > finalMaxBytes;
-    let bodyForResponse = document.body;
+    const requestedMaxBytes = max_bytes ?? DEFAULT_MAX_BYTES;
+    const finalMaxBytes = Math.min(requestedMaxBytes, ABSOLUTE_MAX_BYTES);
 
-    if (isTruncated) {
-      // Truncate by bytes, not characters, to ensure within limit
-      const encoder = new TextEncoder();
-      const bodyArray = encoder.encode(document.body);
-      const truncatedArray = bodyArray.slice(0, finalMaxBytes);
-      bodyForResponse = new TextDecoder().decode(truncatedArray);
-    }
+    const encoder = new TextEncoder();
+    const bodyBytes = encoder.encode(document.body);
+    const isTruncated = bodyBytes.length > finalMaxBytes;
+    const truncatedBytes = isTruncated ? bodyBytes.slice(0, finalMaxBytes) : bodyBytes;
+    const bodyForResponse = new TextDecoder().decode(truncatedBytes);
 
-    // Parse frontmatter (simple implementation - assumes YAML frontmatter with ---)
     let frontmatter = "";
-    let body = bodyForResponse;
+    let bodyContent = bodyForResponse;
 
-    if (body.startsWith("---\n")) {
-      const endOfFrontmatter = body.indexOf("\n---\n", 4);
+    if (bodyContent.startsWith("---\n")) {
+      const endOfFrontmatter = bodyContent.indexOf("\n---\n", 4);
       if (endOfFrontmatter !== -1) {
-        frontmatter = body.slice(4, endOfFrontmatter);
-        body = body.slice(endOfFrontmatter + 5);
+        frontmatter = bodyContent.slice(4, endOfFrontmatter);
+        bodyContent = bodyContent.slice(endOfFrontmatter + 5);
       }
     }
 
     return Response.json({
       frontmatter,
-      body,
+      body: bodyContent,
       updated: document.updated,
-      full_size: bodyBytes,
+      full_size: bodyBytes.length,
       is_truncated: isTruncated,
     });
   } catch (error) {

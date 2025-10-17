@@ -35,14 +35,13 @@ export function generateDocumentSlugAndSuffix(
   // Try to generate unique suffix with max 5 attempts
   const maxAttempts = 5;
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    // Generate 8-character suffix using crypto.randomUUID()
     const suffix = crypto.randomUUID().slice(-8).replace(/-/g, "");
 
     // Check if suffix is available (not used by another doc)
     if (!existingSuffixes.includes(suffix) || suffix === currentDocSuffix) {
       return {
-        slug: baseSlug, // Base slug stored in DB: "meeting-notes"
-        suffix, // Unique suffix stored in DB: "8a9f4b2c"
+        slug: baseSlug,
+        suffix,
         compoundSlug: `${baseSlug}-${suffix}`, // For UI/URLs: "meeting-notes-8a9f4b2c"
       };
     }
