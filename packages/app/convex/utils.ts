@@ -48,26 +48,62 @@ export function generateDocumentSlugAndSuffix(
     }
   }
 
-  throw new ConvexError("Failed to create your document. Please try again.");
+  throw new ConvexError("Failed to create your document suffix. Please try again.");
 }
 
 // Token management utilities
-export function generateToken(): string {
-  // Use crypto.randomUUID() for secure token generation
-  const token = crypto.randomUUID().replace(/-/g, ""); // Remove dashes for cleaner token
+export function generateToken(byteLength = 32): string {
+  const randomBytes = new Uint8Array(byteLength);
+  crypto.getRandomValues(randomBytes);
+  const token = Array.from(randomBytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
   return `mem_${token}`;
 }
 
 export async function hashToken(token: string): Promise<string> {
-  // SHA-256 hash using Web Crypto API as specified in the plan
+  const hashBytes = await computeTokenHashBytes(token);
+  return toHex(hashBytes);
+}
+
+export async function validateTokenHash(token: string, expectedHash: string): Promise<boolean> {
+  try {
+    const expectedBytes = fromHex(expectedHash);
+    const computedBytes = await computeTokenHashBytes(token);
+    if (computedBytes.length !== expectedBytes.length) {
+      return false;
+    }
+    let mismatch = 0;
+    for (let index = 0; index < computedBytes.length; index++) {
+      mismatch |= computedBytes[index] ^ expectedBytes[index];
+    }
+    return mismatch === 0;
+  } catch {
+    // Reject tokens if the stored hash is malformed.
+    return false;
+  }
+}
+
+function toHex(bytes: Uint8Array): string {
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function fromHex(hex: string): Uint8Array {
+  if (hex.length % 2 !== 0) {
+    throw new Error("Invalid hex string length.");
+  }
+  const output = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < hex.length; i += 2) {
+    const byte = Number.parseInt(hex.slice(i, i + 2), 16);
+    if (Number.isNaN(byte)) {
+      throw new Error("Invalid hex string.");
+    }
+    output[i / 2] = byte;
+  }
+  return output;
+}
+
+async function computeTokenHashBytes(token: string): Promise<Uint8Array> {
   const encoder = new TextEncoder();
   const data = encoder.encode(token);
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-export async function validateTokenHash(token: string, hash: string): Promise<boolean> {
-  const computedHash = await hashToken(token);
-  return computedHash === hash;
+  return new Uint8Array(hashBuffer);
 }
