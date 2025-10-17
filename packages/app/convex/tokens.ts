@@ -2,44 +2,45 @@ import { ConvexError, v } from "convex/values";
 import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { generateToken, hashToken, requireUserId } from "./utils";
 
+const MAX_TOKENS_PER_USER = 10;
+
 export const createToken = mutation({
   args: {
     name: v.string(),
   },
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx);
+    const trimmedName = args.name.trim();
+    if (!trimmedName) {
+      throw new ConvexError("Token name is required.");
+    }
 
-    // Check if user already has too many tokens (optional: limit per user)
     const existingTokens = await ctx.db
       .query("tokens")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .collect();
+      .take(MAX_TOKENS_PER_USER + 1);
 
-    const MAX_TOKENS_PER_USER = 10;
     if (existingTokens.length >= MAX_TOKENS_PER_USER) {
       throw new ConvexError(
         `You can have up to ${MAX_TOKENS_PER_USER} tokens. Please delete some existing tokens first.`,
       );
     }
 
-    // Generate new token and hash it
     const plainToken = generateToken();
     const tokenHash = await hashToken(plainToken);
 
     const now = Date.now();
-
     const tokenId = await ctx.db.insert("tokens", {
       userId,
       tokenHash,
-      name: args.name.trim(),
+      name: trimmedName,
       createdAt: now,
     });
 
-    // Return the plain token ONCE (never show it again)
     return {
       _id: tokenId,
-      token: plainToken, // Only returned once at creation
-      name: args.name,
+      token: plainToken,
+      name: trimmedName,
       createdAt: now,
     };
   },
@@ -53,9 +54,9 @@ export const listUserTokens = query({
     const tokens = await ctx.db
       .query("tokens")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .order("desc")
       .collect();
 
-    // Return tokens WITHOUT the hash (only metadata)
     return tokens.map((token) => ({
       _id: token._id,
       name: token.name,
@@ -92,12 +93,12 @@ export const validateToken = internalQuery({
     plainToken: v.string(),
   },
   handler: async (ctx, args) => {
-    if (!args.plainToken) {
+    const plainToken = args.plainToken.trim();
+    if (!plainToken) {
       return null;
     }
 
-    // Find token by hash
-    const tokenHash = await hashToken(args.plainToken);
+    const tokenHash = await hashToken(plainToken);
     const token = await ctx.db
       .query("tokens")
       .withIndex("by_tokenHash", (q) => q.eq("tokenHash", tokenHash))
