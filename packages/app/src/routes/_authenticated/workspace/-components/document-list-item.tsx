@@ -23,6 +23,7 @@ type DocumentListItemProps = {
 
 export function DocumentListItem({ document, onDelete, isDeleting }: DocumentListItemProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const handle = `${document.slug}-${document.suffix}`;
 
   const handleDelete = () => {
     setIsDeleteDialogOpen(true);
@@ -38,8 +39,8 @@ export function DocumentListItem({ document, onDelete, isDeleting }: DocumentLis
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <Link
-            to="/workspace/$docId"
-            params={{ docId: document._id }}
+            to="/workspace/$docHandle"
+            params={{ docHandle: handle }}
             className="group/document block"
           >
             <h3 className="font-medium text-foreground group-hover/document:text-primary transition-colors line-clamp-1">

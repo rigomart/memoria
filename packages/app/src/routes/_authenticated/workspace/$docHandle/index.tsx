@@ -8,16 +8,16 @@ import { Streamdown } from "streamdown";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/convex/_generated/api";
-import type { Doc, Id } from "@/convex/_generated/dataModel";
+import type { Doc } from "@/convex/_generated/dataModel";
 import { ConflictModal } from "./-components/conflict-modal";
 
-export const Route = createFileRoute("/_authenticated/workspace/$docId/")({
+export const Route = createFileRoute("/_authenticated/workspace/$docHandle/")({
   component: DocumentEditorPage,
 });
 
 function DocumentEditorPage() {
-  const { docId } = Route.useParams();
-  return <DocumentEditorLoader docId={docId as Id<"documents">} />;
+  const { docHandle } = Route.useParams();
+  return <DocumentEditorLoader docHandle={docHandle} />;
 }
 
 type DocumentEditorProps = {
@@ -25,11 +25,38 @@ type DocumentEditorProps = {
 };
 
 type DocumentEditorLoaderProps = {
-  docId: Id<"documents">;
+  docHandle: string;
 };
 
-function DocumentEditorLoader({ docId }: DocumentEditorLoaderProps) {
-  const document = useQuery(api.documents.getDocument, { documentId: docId });
+function extractSuffix(handle: string): string | null {
+  const lastDashIndex = handle.lastIndexOf("-");
+  if (lastDashIndex === -1 || lastDashIndex === handle.length - 1) {
+    return null;
+  }
+  return handle.slice(lastDashIndex + 1);
+}
+
+function DocumentEditorLoader({ docHandle }: DocumentEditorLoaderProps) {
+  const navigate = Route.useNavigate();
+  const suffix = extractSuffix(docHandle);
+  if (!suffix) {
+    throw notFound();
+  }
+
+  const document = useQuery(api.documents.getDocumentBySuffix, { suffix });
+  const canonicalHandle =
+    document && document !== null ? `${document.slug}-${document.suffix}` : null;
+
+  useEffect(() => {
+    if (!canonicalHandle || docHandle === canonicalHandle) {
+      return;
+    }
+    void navigate({
+      to: "/workspace/$docHandle",
+      params: { docHandle: canonicalHandle },
+      replace: true,
+    });
+  }, [canonicalHandle, docHandle, navigate]);
 
   if (document === undefined) {
     return (
@@ -41,6 +68,14 @@ function DocumentEditorLoader({ docId }: DocumentEditorLoaderProps) {
 
   if (document === null) {
     throw notFound();
+  }
+
+  if (canonicalHandle && docHandle !== canonicalHandle) {
+    return (
+      <div className="rounded-lg border border-dashed px-4 py-12 text-center text-sm text-muted-foreground">
+        Redirecting to the latest document URL…
+      </div>
+    );
   }
 
   return <DocumentEditor document={document} />;
@@ -296,7 +331,7 @@ function DocumentEditor({ document }: DocumentEditorProps) {
         </div>
       </div>
 
-      <Tabs defaultValue="preview">
+      <Tabs defaultValue="edit">
         <div className="flex gap-2 w-full items-center justify-between">
           <TabsList>
             <TabsTrigger value="edit">

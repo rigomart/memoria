@@ -48,6 +48,9 @@
   --shadow-2xl: inset 0 1px 3px #ffffff70, 0 4px 8px #00000070, 0 8px 16px #00000035;
   --tracking-normal: 0em;
   --spacing: 0.25rem;
+  /* Custom properties for scrollbar width calculation - fallback for browsers without scrollbar-gutter support */
+  --scrollbar-width: 0px;
+  --viewport-scrollbar-diff: 0px;
 }
 
 .dark {
@@ -152,16 +155,21 @@
   body {
     @apply bg-background text-foreground;
   }
-}
-
-/* Prevent scroll lock helpers from double-compensating when the gutter is already reserved */
-body[data-scroll-locked],
-.with-scroll-bars-hidden {
-  margin-right: 0 !important;
-  padding-right: 0 !important;
-  --removed-body-scroll-bar-size: 0px;
-}
-button:not(:disabled),
-[role="button"]:not(:disabled) {
-  cursor: pointer;
+  @supports (scrollbar-gutter: stable) {
+    html {
+      scrollbar-gutter: stable;
+    }
+  }
+  @supports not (scrollbar-gutter: stable) {
+    body {
+      overflow-y: scroll;
+    }
+  }
+  /* Prevent scroll lock helpers from double-compensating when the gutter is already reserved */
+  body[data-scroll-locked],
+  .with-scroll-bars-hidden {
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+    --removed-body-scroll-bar-size: 0px;
+  }
 }
