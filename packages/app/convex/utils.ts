@@ -16,12 +16,8 @@ export async function requireUserId(ctx: AuthContext): Promise<string> {
 }
 
 // Slugification utilities
-export function generateDocumentSlugAndSuffix(
-  title: string,
-  existingSuffixes: string[],
-  currentDocSuffix?: string,
-): { slug: string; suffix: string; compoundSlug: string } {
-  let baseSlug = slugify(title, {
+export function generateDocumentSlug(title: string): string {
+  const baseSlug = slugify(title, {
     lower: true,
     strict: true,
     remove: /[^\w\s-]/g,
@@ -29,8 +25,18 @@ export function generateDocumentSlugAndSuffix(
 
   // If slug is empty, use a default
   if (!baseSlug) {
-    baseSlug = "untitled";
+    return "untitled";
   }
+
+  return baseSlug;
+}
+
+export function generateDocumentSlugAndSuffix(
+  title: string,
+  existingSuffixes: string[],
+  currentDocSuffix?: string,
+): { slug: string; suffix: string; compoundSlug: string } {
+  const baseSlug = generateDocumentSlug(title);
 
   // Try to generate unique suffix with max 5 attempts
   const maxAttempts = 5;

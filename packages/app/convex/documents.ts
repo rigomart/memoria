@@ -1,7 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
 import { internalQuery, mutation, type QueryCtx, query } from "./_generated/server";
-import { generateDocumentSlugAndSuffix, requireUserId } from "./utils";
+import { generateDocumentSlug, generateDocumentSlugAndSuffix, requireUserId } from "./utils";
 
 const DOCUMENT_LIMIT = 10;
 export const MAX_DOCUMENT_SIZE_BYTES = 800 * 1024;
@@ -89,24 +89,9 @@ export const updateDocument = mutation({
     let suffix = document.suffix;
 
     if (trimmedTitle !== document.title) {
-      // Get all user's existing documents for collision detection (excluding current doc)
-      const userDocs = await ctx.db
-        .query("documents")
-        .withIndex("by_userId", (q) => q.eq("userId", userId))
-        .collect();
-
-      const existingSuffixes = userDocs
-        .filter((doc) => doc._id !== document._id) // Exclude current doc
-        .map((doc) => doc.suffix)
-        .filter(Boolean);
-
-      const generated = generateDocumentSlugAndSuffix(
-        trimmedTitle,
-        existingSuffixes,
-        document.suffix,
-      );
-      slug = generated.slug;
-      suffix = generated.suffix;
+      slug = generateDocumentSlug(trimmedTitle);
+      // Preserve the original suffix so existing document handles continue working.
+      suffix = document.suffix;
     }
 
     await ctx.db.patch(document._id, {
