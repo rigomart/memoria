@@ -10,6 +10,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 
@@ -21,7 +22,7 @@ export function WorkspaceHeader() {
   );
 
   return (
-    <header className="sticky top-0 z-20 border-b border-border/70 bg-gradient-to-b from-background/95 via-background/90 to-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/75">
+    <header className="sticky top-16 z-20 border-b border-border/70 bg-gradient-to-b from-background/95 via-background/90 to-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/75">
       <div className="mx-auto flex h-12 w-full max-w-6xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
         <Breadcrumb>
           <BreadcrumbList>
@@ -47,9 +48,7 @@ export function WorkspaceHeader() {
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   <BreadcrumbPage>
-                    <span className="text-sm font-semibold">
-                      {currentDocument.title || "Untitled Document"}
-                    </span>
+                    <span className="text-sm font-semibold">{currentDocument.title}</span>
                   </BreadcrumbPage>
                 </BreadcrumbItem>
               </>
@@ -58,6 +57,9 @@ export function WorkspaceHeader() {
         </Breadcrumb>
 
         <div className="flex items-center gap-3">
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/settings">Settings</Link>
+          </Button>
           <Authenticated>
             <UserButton />
           </Authenticated>

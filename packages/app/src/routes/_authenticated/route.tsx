@@ -1,5 +1,6 @@
 import { createFileRoute, Navigate, Outlet } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
+import { AuthenticatedHeader } from "@/components/authenticated-header";
 import { Spinner } from "@/components/ui/spinner";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -21,5 +22,12 @@ function AuthenticatedLayout() {
     return <Navigate to="/" search={{ redirect: location.href }} />;
   }
 
-  return <Outlet />;
+  return (
+    <div className="flex min-h-screen flex-col bg-background">
+      <AuthenticatedHeader />
+      <main className="flex-1">
+        <Outlet />
+      </main>
+    </div>
+  );
 }

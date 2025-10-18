@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedWorkspaceRouteRouteImport } from './routes/_authenticated/workspace/route'
 import { Route as AuthenticatedWorkspaceIndexRouteImport } from './routes/_authenticated/workspace/index'
 import { Route as AuthenticatedWorkspaceDocIdIndexRouteImport } from './routes/_authenticated/workspace/$docId/index'
@@ -23,6 +24,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedWorkspaceRouteRoute =
   AuthenticatedWorkspaceRouteRouteImport.update({
@@ -46,11 +52,13 @@ const AuthenticatedWorkspaceDocIdIndexRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/workspace': typeof AuthenticatedWorkspaceRouteRouteWithChildren
+  '/settings': typeof AuthenticatedSettingsRoute
   '/workspace/': typeof AuthenticatedWorkspaceIndexRoute
   '/workspace/$docId': typeof AuthenticatedWorkspaceDocIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/workspace': typeof AuthenticatedWorkspaceIndexRoute
   '/workspace/$docId': typeof AuthenticatedWorkspaceDocIdIndexRoute
 }
@@ -59,19 +67,26 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/_authenticated/workspace': typeof AuthenticatedWorkspaceRouteRouteWithChildren
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/workspace/': typeof AuthenticatedWorkspaceIndexRoute
   '/_authenticated/workspace/$docId/': typeof AuthenticatedWorkspaceDocIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/workspace' | '/workspace/' | '/workspace/$docId'
+  fullPaths:
+    | '/'
+    | '/workspace'
+    | '/settings'
+    | '/workspace/'
+    | '/workspace/$docId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/workspace' | '/workspace/$docId'
+  to: '/' | '/settings' | '/workspace' | '/workspace/$docId'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/_authenticated/workspace'
+    | '/_authenticated/settings'
     | '/_authenticated/workspace/'
     | '/_authenticated/workspace/$docId/'
   fileRoutesById: FileRoutesById
@@ -96,6 +111,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/workspace': {
       id: '/_authenticated/workspace'
@@ -140,11 +162,13 @@ const AuthenticatedWorkspaceRouteRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedWorkspaceRouteRoute: typeof AuthenticatedWorkspaceRouteRouteWithChildren
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedWorkspaceRouteRoute:
     AuthenticatedWorkspaceRouteRouteWithChildren,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
