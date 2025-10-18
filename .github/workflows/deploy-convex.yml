@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    paths:
+      - packages/app/convex/**
+      - .github/workflows/deploy-convex.yml
 
 concurrency:
   group: deploy-convex-${{ github.ref }}
