@@ -11,6 +11,7 @@
 - `bun run check-types` – Type-checks the project against the current schema (uses `tsc -b --noEmit` for project references).
 - `bun run lint` – Runs Biome to lint and format ([auto-fix] enabled). Some Tailwind at-rule warnings may persist; note them instead of suppressing silently.
 - `bun run build` – Executes the production build (Vite + TypeScript project references).
+- `bun run test` – Runs Vitest (Node environment) against server/shared TypeScript modules. Use `bun run test:watch` for watch mode.
 
 ## Coding Style & Naming Conventions
 - TypeScript/React throughout; use modern ES modules and functional components.
@@ -19,8 +20,9 @@
 - Keep Convex functions lean, exporting queries/mutations from `packages/app/convex`. Reuse `requireUserId` and other shared helpers.
 
 ## Testing Guidelines
-- TypeScript checking and linting are the current safety net. No dedicated unit-test suite is configured yet; add targeted tests when introducing critical logic.
-- When adding tests, colocate them near the implementation and document the command needed to run them.
+- Vitest is configured for Node-based `.test.ts` files under `src/` and `convex/`. Prefer colocating tests next to the modules they cover.
+- Focus coverage on backend logic, utilities, and other non-React modules until UI testing helpers are introduced.
+- Always note the command (`bun run test`) when introducing new suites or updating existing ones.
 
 ## Commit & Pull Request Guidelines
 - Write descriptive, imperative commit messages (e.g., “Add document breadcrumb helper”). Group related edits together.

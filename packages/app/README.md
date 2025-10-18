@@ -1,8 +1,8 @@
-# Memoria — Knowledge Base Application
+# Memoria — Context Store Application
 
-Memoria is a **Markdown-based knowledge base for developers** that helps teams keep track of architectural choices, conventions, and key feature details in a way that is easy for people—and AI coding tools—to use quickly.
+Memoria is a **context store for AI agents**. It helps teams draft specs, PRDs, implementation plans, and conventions with AI assistance, store them once, and let their agents retrieve the right context automatically through the Model Context Protocol (MCP).
 
-This is the main React application for the Memoria platform.
+This package contains the primary React/Convex implementation of that experience.
 
 ## Technology Stack
 
@@ -58,6 +58,18 @@ bun preview
 bun lint
 ```
 
+### Testing
+
+```bash
+# Run Vitest once (TypeScript/Convex modules)
+bun run test
+
+# Watch mode
+bun run test:watch
+```
+
+Vitest is currently configured with the Node test environment and is scoped to `.test.ts` files in `src/` and `convex/`. Add new suites alongside the modules they cover.
+
 ## Environment Variables
 
 Copy `.env.local.example` to `.env.local` and configure the following variables:
@@ -76,13 +88,12 @@ src/
 └── styles/        # Global styles and CSS
 ```
 
-## Key Features
+## Key Capabilities
 
-- **Project Knowledge Management**: Capture architectural decisions and conventions
-- **AI-Friendly Content**: Structured Markdown documents optimized for AI tools
-- **Real-time Collaboration**: Multiple users working together
-- **Search & Discovery**: Fast search across all knowledge documents
-- **Version Control**: Track changes and maintain history
+- **AI-Assisted Authoring**: Draft specs, ADRs, plans, and conventions with structured Markdown helpers.
+- **Automatic Retrieval via MCP**: AI agents resolve relevant docs through MCP tools (`memory.search`, `memory.get`, `memory.list`) without manual prompt stuffing.
+- **Living Specs & Governance**: Track freshness, provenance, and authority signals so agents trust the content they receive.
+- **Integration Friendly**: REST/MCP entry points and an IDE companion for low-latency access when coding.
 
 ## Development Notes
 
