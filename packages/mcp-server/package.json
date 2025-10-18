@@ -2,7 +2,7 @@
   "name": "@mirdor/memoria-mcp",
   "version": "0.0.1",
   "description": "Memoria MCP Server",
-  "type": "commonjs",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/rigomart/memoria"
