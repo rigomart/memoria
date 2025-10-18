@@ -1,7 +1,7 @@
 import { UserButton } from "@clerk/clerk-react";
 import { Link, useParams } from "@tanstack/react-router";
 import { Authenticated, useQuery } from "convex/react";
-import { Brain } from "lucide-react";
+import { Brain, Settings } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -58,7 +58,10 @@ export function WorkspaceHeader() {
 
         <div className="flex items-center gap-3">
           <Button asChild variant="ghost" size="sm">
-            <Link to="/settings">Settings</Link>
+            <Link to="/settings">
+              <Settings className="size-4" />
+              Settings
+            </Link>
           </Button>
           <Authenticated>
             <UserButton />

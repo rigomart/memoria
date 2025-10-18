@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { format } from "date-fns";
-import { Copy, Plus, Trash2 } from "lucide-react";
+import { Copy, Plus, Trash2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -205,9 +205,11 @@ function SettingsPage() {
               }}
               disabled={isCreating}
             >
+              <X className="size-4" />
               Cancel
             </Button>
             <Button type="button" onClick={handleCreateToken} disabled={isCreating}>
+              <Plus className="size-4" />
               {isCreating ? "Creating…" : "Create token"}
             </Button>
           </DialogFooter>
@@ -264,6 +266,7 @@ function SettingsPage() {
                 setRevealedToken(null);
               }}
             >
+              <X className="size-4" />
               Close
             </Button>
           </DialogFooter>

@@ -1,7 +1,7 @@
 import { SignInButton, SignUpButton } from "@clerk/clerk-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
-import { ArrowRight, Brain, RefreshCw, Sparkles, Zap } from "lucide-react";
+import { ArrowRight, Brain, LogIn, RefreshCw, Sparkles, UserPlus, Zap } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -37,11 +37,13 @@ function HomeRoute() {
               <div className="flex items-center gap-2">
                 <SignInButton mode="modal">
                   <Button type="button" variant="ghost" size="sm">
+                    <LogIn className="size-4" />
                     Sign in
                   </Button>
                 </SignInButton>
                 <SignUpButton mode="modal">
                   <Button type="button" size="sm">
+                    <UserPlus className="size-4" />
                     Create account
                   </Button>
                 </SignUpButton>
@@ -72,18 +74,23 @@ function HomeRoute() {
               <Unauthenticated>
                 <SignUpButton mode="modal">
                   <Button type="button" size="lg">
+                    <Sparkles className="size-4" />
                     Start capturing
                   </Button>
                 </SignUpButton>
                 <SignInButton mode="modal">
                   <Button type="button" variant="outline" size="lg">
+                    <LogIn className="size-4" />
                     Sign in
                   </Button>
                 </SignInButton>
               </Unauthenticated>
               <Authenticated>
                 <Button asChild type="button" size="lg">
-                  <Link to="/workspace">Continue in your workspace</Link>
+                  <Link to="/workspace">
+                    <ArrowRight className="size-4" />
+                    Continue in your workspace
+                  </Link>
                 </Button>
               </Authenticated>
             </div>

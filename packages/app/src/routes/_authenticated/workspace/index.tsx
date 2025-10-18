@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
-import { FileText } from "lucide-react";
+import { FileText, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -118,6 +118,7 @@ function DocumentsContent() {
           }}
           disabled={limitReached}
         >
+          <Plus className="size-4" />
           New Document
         </Button>
         {limitReached ? (
@@ -154,6 +155,7 @@ function DocumentsContent() {
               }}
               disabled={limitReached}
             >
+              <Plus className="size-4" />
               New Document
             </Button>
           </EmptyContent>
@@ -237,10 +239,12 @@ function CreateDocumentDialog({
         <DialogFooter className="mt-6">
           <DialogClose asChild>
             <Button type="button" variant="outline" disabled={isCreating}>
+              <X className="size-4" />
               Cancel
             </Button>
           </DialogClose>
           <Button type="button" onClick={onSubmit} disabled={isCreating || disabled}>
+            <Plus className="size-4" />
             {isCreating ? "Creating…" : "Create"}
           </Button>
         </DialogFooter>

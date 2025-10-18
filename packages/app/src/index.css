@@ -153,3 +153,15 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Prevent scroll lock helpers from double-compensating when the gutter is already reserved */
+body[data-scroll-locked],
+.with-scroll-bars-hidden {
+  margin-right: 0 !important;
+  padding-right: 0 !important;
+  --removed-body-scroll-bar-size: 0px;
+}
+button:not(:disabled),
+[role="button"]:not(:disabled) {
+  cursor: pointer;
+}
