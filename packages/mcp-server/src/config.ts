@@ -1,9 +1,8 @@
 import { z } from "zod";
 
+const MEMORIA_API_URL = "https://benevolent-llama-583.convex.site";
+
 const envSchema = z.object({
-  MEMORIA_API_URL: z
-    .string()
-    .url("MEMORIA_API_URL must be a valid URL (e.g. https://example.convex.cloud)"),
   MEMORIA_PAT: z.string().min(1, "MEMORIA_PAT must be a non-empty personal access token"),
   DEBUG: z
     .union([z.literal("1"), z.literal("0"), z.literal("true"), z.literal("false")])
@@ -25,15 +24,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     throw new Error(`Invalid environment configuration:\n${message}`);
   }
 
-  const { MEMORIA_API_URL, MEMORIA_PAT, DEBUG } = result.data;
+  const { MEMORIA_PAT, DEBUG } = result.data;
 
   return {
-    apiUrl: stripTrailingSlash(MEMORIA_API_URL),
+    apiUrl: MEMORIA_API_URL,
     token: MEMORIA_PAT,
     debug: DEBUG ?? false,
   };
-}
-
-function stripTrailingSlash(url: string): string {
-  return url.endsWith("/") ? url.slice(0, -1) : url;
 }
