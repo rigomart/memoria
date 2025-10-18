@@ -1,9 +1,8 @@
 {
   "name": "@mirdor/memoria-mcp",
   "version": "0.0.1",
-  "module": "index.ts",
   "description": "Memoria MCP Server",
-  "type": "module",
+  "type": "commonjs",
   "repository": {
     "type": "git",
     "url": "https://github.com/rigomart/memoria"
@@ -11,7 +10,7 @@
   "author": "Miguel Rodriguez",
   "license": "MIT",
   "bin": {
-    "mcp": "./dist/main.js"
+    "memoria-mcp": "./dist/index.js"
   },
   "keywords": [
     "memoria",
@@ -26,16 +25,18 @@
   "scripts": {
     "lint": "biome check --write",
     "build": "tsc",
-    "start": "bun run dist/main.js"
+    "dev": "tsc --watch",
+    "check-types": "tsc --noEmit",
+    "start": "node dist/index.js"
   },
   "homepage": "https://github.com/rigomart/memoria#readme",
   "devDependencies": {
-    "@types/bun": "latest",
-    "typescript": "^5",
-    "@biomejs/biome": "2.2.5"
+    "@biomejs/biome": "2.2.5",
+    "@types/node": "^22.10.1",
+    "typescript": "^5.5.4"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.20.1",
-    "zod": "^4.1.12"
+    "zod": "^3.24.2"
   }
 }
