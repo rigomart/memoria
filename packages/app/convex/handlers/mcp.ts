@@ -74,9 +74,13 @@ async function authenticateRequest(ctx: ActionCtx, request: Request): Promise<Au
   return { ok: true, token: tokenInfo };
 }
 
-async function updateTokenLastUsed(ctx: ActionCtx, tokenId: Id<"tokens">) {
+function updateTokenLastUsed(ctx: ActionCtx, tokenId: Id<"tokens">) {
   try {
-    await ctx.runMutation(internal.tokens.updateTokenLastUsed, { tokenId });
+    void ctx.scheduler
+      .runAfter(0, internal.tokens.updateTokenLastUsed, { tokenId })
+      .catch((error) => {
+        console.error("Failed to update token lastUsedAt:", error);
+      });
   } catch (error) {
     console.error("Failed to update token lastUsedAt:", error);
   }

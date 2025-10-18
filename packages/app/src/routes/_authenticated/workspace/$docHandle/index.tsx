@@ -234,10 +234,10 @@ function DocumentEditor({ document }: DocumentEditorProps) {
       clearTimeout(saveTimeoutRef.current);
     }
 
-    // Set new timeout for 500ms
+    // Set new timeout for 800ms
     saveTimeoutRef.current = setTimeout(() => {
       performSave();
-    }, 500);
+    }, 800);
 
     // Cleanup
     return () => {
