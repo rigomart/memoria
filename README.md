@@ -14,10 +14,11 @@ bun install
 ### Useful Commands
 
 - `bun run dev` – start the Memoria app locally (Vite dev server)
-- `bun run build` – build all workspaces
+- `bun run build` – build all workspaces (use `--filter <workspace>` for targeted builds)
 - `bun run check-types` – run TypeScript project references in no-emit mode
 - `bun run lint` – run Biome with autofix enabled
 - `bun run test` – execute Vitest against the app workspace (TypeScript targets only)
+- `bun run release` – build the MCP server workspace and publish with Changesets (CI usually handles this)
 
 > Vitest currently focuses on non-React TypeScript modules (Convex helpers, utilities, etc.). Extend coverage as you add critical logic.
 

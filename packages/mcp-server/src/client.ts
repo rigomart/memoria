@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { AppConfig } from "./config";
-import type { Logger } from "./logger";
+import type { AppConfig } from "./config.js";
+import type { Logger } from "./logger.js";
 
 const searchResultSchema = z.object({
   doc_handle: z.string(),

@@ -2,10 +2,10 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { MemoriaClient } from "./client";
-import { loadConfig } from "./config";
-import { createLogger } from "./logger";
-import { registerTools } from "./tools";
+import { MemoriaClient } from "./client.js";
+import { loadConfig } from "./config.js";
+import { createLogger } from "./logger.js";
+import { registerTools } from "./tools.js";
 
 async function main() {
   const config = loadConfig(process.env);

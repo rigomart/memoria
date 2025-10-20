@@ -29,6 +29,12 @@
 - Pull requests should describe scope, note any UI changes (screenshots recommended), and call out backend schema updates or migration steps.
 - Always run type-check and lint before submitting. Mention any expected lint warnings (e.g., Tailwind `@custom-variant`) in the PR description.
 
+## Release Workflow
+- Use Changesets for version bumps: after user-facing changes to the MCP server, run `bun run changeset` and commit the generated file.
+- The `Release` workflow opens an automated “Version Packages” PR on pushes to `main`; review the generated changelog/version bump and merge when ready.
+- Once that PR merges back to `main`, the same workflow reruns, executes `bun run release`, and publishes `@mirdor/memoria-mcp` to npm using the `NPM_TOKEN` secret—no manual tagging required.
+- The app workspace stays private and is ignored by Changesets.
+
 ## Agent-Specific Instructions
 - Do not run `convex dev` or other long-lived processes when they may already be active; request results from the host instead.
 - Avoid destructive git commands (`reset --hard`, `checkout -- .`). Never revert user-owned changes unless explicitly asked.
