@@ -1,9 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
-import { ArrowRight, Brain, LogIn, RefreshCw, Sparkles, UserPlus, Zap } from "lucide-react";
-import { SiteBrand } from "@/components/site-brand";
+import { ArrowRight, Brain, LogIn, RefreshCw, Sparkles, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
+import { LandingHeader } from "../components/landing-header";
 
 export const Route = createFileRoute("/")({
   validateSearch: (search) =>
@@ -22,44 +20,9 @@ function HomeRoute() {
 
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-background text-foreground">
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.28),_transparent_55%),_radial-gradient(circle_at_bottom,_rgba(16,185,129,0.22),_transparent_60%),_repeating-linear-gradient(90deg,_rgba(148,163,184,0.12)_0,_rgba(148,163,184,0.12)_1px,transparent_1px,transparent_120px),_repeating-linear-gradient(0deg,_rgba(148,163,184,0.12)_0,_rgba(148,163,184,0.12)_1px,transparent_1px,transparent_120px)]" />
-      <header className="border-b border-border/70 bg-gradient-to-b from-background/95 via-background/90 to-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/75">
-        <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between gap-6 px-4">
-          <Link to="/" className="text-foreground" search={redirectSearch}>
-            <SiteBrand />
-          </Link>
-          <nav className="flex items-center gap-2 text-xs sm:text-sm">
-            <AuthLoading>
-              <span className="flex size-9 items-center justify-center rounded-full border border-border/60 bg-muted/30">
-                <Spinner className="size-4 text-muted-foreground" />
-              </span>
-            </AuthLoading>
-            <Unauthenticated>
-              <div className="flex items-center gap-2">
-                <Button asChild type="button" variant="ghost" size="sm">
-                  <Link to="/sign-in" search={redirectSearch}>
-                    <LogIn className="size-4" />
-                    Sign in
-                  </Link>
-                </Button>
-                <Button asChild type="button" size="sm">
-                  <Link to="/sign-up" search={redirectSearch}>
-                    <UserPlus className="size-4" />
-                    Create account
-                  </Link>
-                </Button>
-              </div>
-            </Unauthenticated>
-            <Authenticated>
-              <Button asChild type="button" size="sm">
-                <Link to="/workspace">Go to workspace</Link>
-              </Button>
-            </Authenticated>
-          </nav>
-        </div>
-      </header>
+      <LandingHeader redirect={redirect} />
       <main className="flex flex-1 items-stretch">
-        <section className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-4 py-12 sm:px-6 sm:py-20">
+        <section className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-4 py-12 sm:px-6 sm:py-16">
           <div className="mx-auto max-w-2xl space-y-6 text-center">
             <span className="inline-flex items-center rounded-full border border-border/60 bg-background/70 px-3 py-1 text-xs text-muted-foreground shadow-sm">
               Context Your AI Agent Can Find
