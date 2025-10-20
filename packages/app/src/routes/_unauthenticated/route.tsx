@@ -1,12 +1,10 @@
-import { SignUp } from "@clerk/clerk-react";
-import { shadcn } from "@clerk/themes";
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute, Navigate, Outlet } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
 import { AuthPatternPanel } from "@/components/auth-pattern-panel";
 import { Header } from "@/components/header";
 import { Spinner } from "@/components/ui/spinner";
 
-export const Route = createFileRoute("/sign-up")({
+export const Route = createFileRoute("/_unauthenticated")({
   validateSearch: (search) =>
     ({
       redirect:
@@ -14,12 +12,12 @@ export const Route = createFileRoute("/sign-up")({
           ? search.redirect
           : undefined,
     }) satisfies { redirect?: string },
-  component: SignUpRoute,
+  component: UnauthenticatedLayout,
 });
 
-function SignUpRoute() {
+function UnauthenticatedLayout() {
   const { redirect } = Route.useSearch();
-  const { isAuthenticated, isLoading } = useConvexAuth();
+  const { isLoading, isAuthenticated } = useConvexAuth();
   const target = redirect ?? "/workspace";
 
   if (isLoading) {
@@ -40,19 +38,7 @@ function SignUpRoute() {
       <main className="flex flex-1 flex-col">
         <div className="flex flex-1 flex-col md:grid md:h-[calc(100vh-4rem)] md:grid-cols-2">
           <section className="flex flex-1 items-center justify-center px-4 py-6 sm:px-10 lg:px-16 xl:px-20">
-            <SignUp
-              forceRedirectUrl={target}
-              fallbackRedirectUrl={target}
-              signInUrl={
-                redirect ? `/sign-in?redirect=${encodeURIComponent(redirect)}` : "/sign-in"
-              }
-              appearance={{
-                baseTheme: shadcn,
-                variables: {
-                  colorBackground: "var(--color-card)",
-                },
-              }}
-            />
+            <Outlet />
           </section>
           <AuthPatternPanel />
         </div>
