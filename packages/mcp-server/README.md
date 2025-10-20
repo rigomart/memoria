@@ -76,4 +76,4 @@ Each tool returns human-readable text plus structured JSON content so clients ca
 - On startup the MCP server verifies the PAT by issuing a test search; misconfiguration results in a clear error before connecting.
 - The server connects to Memoria’s HTTP server; the base URL is fixed and does not require configuration.
 - Set `DEBUG=1` to log outbound Memoria API requests and MCP tool execution details.
-- Version bumps are managed with Changesets. After merging the automated “Version Packages” PR, tag the release (`mcp-server-vX.Y.Z`) to trigger the publish workflow.
+- Version bumps are managed with Changesets. After merging the automated “Version Packages” PR on `main`, the Release workflow publishes the new version to npm automatically—no manual tagging required.
