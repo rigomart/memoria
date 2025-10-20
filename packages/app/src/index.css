@@ -1,6 +1,7 @@
 /** biome-ignore-all lint/suspicious/noUnknownAtRules: These are valid rules with tailwindcss. Linter will consider them on ˆ2.3 */
 /** biome-ignore-all lint/complexity/noImportantStyles: This is a valid use of !important to prevent double compensation of scrollbar width */
 @import "tailwindcss";
+@import "@clerk/themes/shadcn.css";
 @import "tw-animate-css";
 @source "../node_modules/streamdown/dist/index.js";
 

@@ -1,4 +1,5 @@
 import { SignUp } from "@clerk/clerk-react";
+import { shadcn } from "@clerk/themes";
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
 import { AuthPatternPanel } from "@/components/auth-pattern-panel";
@@ -38,49 +39,20 @@ function SignUpRoute() {
       <Header />
       <main className="flex flex-1 flex-col">
         <div className="flex flex-1 flex-col md:grid md:h-[calc(100vh-4rem)] md:grid-cols-2">
-          <section className="flex flex-1 items-center justify-center px-6 py-10 sm:px-10 lg:px-16 xl:px-20">
-            <div className="w-full max-w-md space-y-6">
-              <div className="space-y-3 text-center md:text-left">
-                <p className="text-sm font-medium uppercase tracking-[0.3em] text-muted-foreground/70">
-                  Sign up
-                </p>
-                <h1 className="text-3xl font-semibold tracking-tight">Create your account</h1>
-                <p className="text-sm text-muted-foreground">
-                  Start organizing your specs, plans, and conventions in one place.
-                </p>
-              </div>
-              <SignUp
-                redirectUrl={target}
-                afterSignUpUrl={target}
-                signInUrl={
-                  redirect ? `/sign-in?redirect=${encodeURIComponent(redirect)}` : "/sign-in"
-                }
-                appearance={{
-                  variables: {
-                    colorBackground: "#020617",
-                    colorText: "#f8fafc",
-                    colorTextSecondary: "#cbd5f5",
-                    colorInputBackground: "#0f172a",
-                    colorInputText: "#e2e8f0",
-                    colorPrimary: "#a855f7",
-                  },
-                  elements: {
-                    footerAction: "hidden",
-                    card: "bg-transparent shadow-none border-0",
-                    headerTitle: "text-foreground",
-                    headerSubtitle: "text-muted-foreground",
-                    socialButtonsBlockButton: "bg-muted/70 hover:bg-muted",
-                    socialButtonsBlockButtonText: "text-foreground",
-                    formButtonPrimary:
-                      "bg-primary hover:bg-primary/90 text-primary-foreground transition-colors",
-                    formFieldInput: "bg-muted/70 border-border/70 text-foreground",
-                    formFieldLabel: "text-muted-foreground",
-                    dividerLine: "bg-border/50",
-                    dividerText: "text-muted-foreground",
-                  },
-                }}
-              />
-            </div>
+          <section className="flex flex-1 items-center justify-center px-6 py-6 sm:px-10 lg:px-16 xl:px-20">
+            <SignUp
+              forceRedirectUrl={target}
+              fallbackRedirectUrl={target}
+              signInUrl={
+                redirect ? `/sign-in?redirect=${encodeURIComponent(redirect)}` : "/sign-in"
+              }
+              appearance={{
+                baseTheme: shadcn,
+                variables: {
+                  colorBackground: "var(--color-card)",
+                },
+              }}
+            />
           </section>
           <AuthPatternPanel />
         </div>
