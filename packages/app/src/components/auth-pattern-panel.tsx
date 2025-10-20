@@ -7,9 +7,8 @@ export function AuthPatternPanel() {
 
   const patternStyles: CSSVariableStyles = {
     "--auth-pattern-base":
-      "color-mix(in oklab, var(--color-background) 92%, var(--color-primary) 8%)",
-    "--auth-pattern-line": "color-mix(in oklab, var(--color-primary) 22%, transparent)",
-    "--auth-pattern-dot": "color-mix(in oklab, var(--color-chart-2) 55%, transparent)",
+      "color-mix(in oklab, var(--color-background) 92%, var(--color-primary) 5%)",
+    "--auth-pattern-line": "color-mix(in oklab, var(--color-primary) 10%, transparent)",
   };
 
   return (
@@ -27,16 +26,12 @@ export function AuthPatternPanel() {
               strokeWidth="1"
               shapeRendering="crispEdges"
             />
-            <circle cx="14" cy="14" r="1.6" fill="var(--auth-pattern-dot)" />
-            <circle cx="50" cy="30" r="1.6" fill="var(--auth-pattern-dot)" />
-            <circle cx="26" cy="54" r="1.6" fill="var(--auth-pattern-dot)" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill={`url(#${patternId})`} />
       </svg>
       <div className="relative flex h-full flex-col justify-center gap-10 px-14 py-16 text-foreground">
         <div className="space-y-5">
-          <p className="text-sm uppercase tracking-[0.3em] text-muted-foreground/80">Memoria</p>
           <h2 className="max-w-xs text-3xl font-semibold tracking-tight text-foreground">
             Knowledge workspaces for agents and teams
           </h2>

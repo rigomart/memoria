@@ -39,14 +39,8 @@ function SignInRoute() {
       <Header />
       <main className="flex flex-1 flex-col">
         <div className="flex flex-1 flex-col md:grid md:h-[calc(100vh-4rem)] md:grid-cols-2">
-          <section className="flex flex-1 items-center justify-center px-6 py-10 sm:px-10 lg:px-16 xl:px-20">
+          <section className="flex flex-1 items-center justify-center px-4 py-6 sm:px-10 lg:px-16 xl:px-20">
             <div className="w-full max-w-md space-y-6">
-              <div className="space-y-3 text-center md:text-left">
-                <h1 className="text-3xl font-semibold tracking-tight">Welcome back</h1>
-                <p className="text-sm text-muted-foreground">
-                  Sign in to continue building your knowledge workspace.
-                </p>
-              </div>
               <SignIn
                 forceRedirectUrl={target}
                 fallbackRedirectUrl={target}

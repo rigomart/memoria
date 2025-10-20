@@ -39,7 +39,7 @@ function SignUpRoute() {
       <Header />
       <main className="flex flex-1 flex-col">
         <div className="flex flex-1 flex-col md:grid md:h-[calc(100vh-4rem)] md:grid-cols-2">
-          <section className="flex flex-1 items-center justify-center px-6 py-6 sm:px-10 lg:px-16 xl:px-20">
+          <section className="flex flex-1 items-center justify-center px-4 py-6 sm:px-10 lg:px-16 xl:px-20">
             <SignUp
               forceRedirectUrl={target}
               fallbackRedirectUrl={target}
