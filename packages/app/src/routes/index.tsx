@@ -1,4 +1,3 @@
-import { SignInButton, SignUpButton } from "@clerk/clerk-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
 import { ArrowRight, Brain, LogIn, RefreshCw, Sparkles, UserPlus, Zap } from "lucide-react";
@@ -7,10 +6,20 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 
 export const Route = createFileRoute("/")({
+  validateSearch: (search) =>
+    ({
+      redirect:
+        typeof search.redirect === "string" && search.redirect.length > 0
+          ? search.redirect
+          : undefined,
+    }) satisfies { redirect?: string },
   component: HomeRoute,
 });
 
 function HomeRoute() {
+  const { redirect } = Route.useSearch();
+  const redirectSearch = { redirect };
+
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-background text-foreground">
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.28),_transparent_55%),_radial-gradient(circle_at_bottom,_rgba(16,185,129,0.22),_transparent_60%),_repeating-linear-gradient(90deg,_rgba(148,163,184,0.12)_0,_rgba(148,163,184,0.12)_1px,transparent_1px,transparent_120px),_repeating-linear-gradient(0deg,_rgba(148,163,184,0.12)_0,_rgba(148,163,184,0.12)_1px,transparent_1px,transparent_120px)]" />
@@ -19,6 +28,7 @@ function HomeRoute() {
           <Link
             to="/"
             className="flex items-center gap-2 rounded-full bg-primary/10 px-2 py-1 text-sm font-medium text-primary"
+            search={redirectSearch}
           >
             <span className="flex items-center gap-2">
               <span className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">
@@ -35,18 +45,18 @@ function HomeRoute() {
             </AuthLoading>
             <Unauthenticated>
               <div className="flex items-center gap-2">
-                <SignInButton mode="modal">
-                  <Button type="button" variant="ghost" size="sm">
+                <Button asChild type="button" variant="ghost" size="sm">
+                  <Link to="/sign-in" search={redirectSearch}>
                     <LogIn className="size-4" />
                     Sign in
-                  </Button>
-                </SignInButton>
-                <SignUpButton mode="modal">
-                  <Button type="button" size="sm">
+                  </Link>
+                </Button>
+                <Button asChild type="button" size="sm">
+                  <Link to="/sign-up" search={redirectSearch}>
                     <UserPlus className="size-4" />
                     Create account
-                  </Button>
-                </SignUpButton>
+                  </Link>
+                </Button>
               </div>
             </Unauthenticated>
             <Authenticated>
@@ -71,28 +81,18 @@ function HomeRoute() {
               and your AI agent pulls exactly what it needs automatically.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-              <Unauthenticated>
-                <SignUpButton mode="modal">
-                  <Button type="button" size="lg">
-                    <Sparkles className="size-4" />
-                    Start capturing
-                  </Button>
-                </SignUpButton>
-                <SignInButton mode="modal">
-                  <Button type="button" variant="outline" size="lg">
-                    <LogIn className="size-4" />
-                    Sign in
-                  </Button>
-                </SignInButton>
-              </Unauthenticated>
-              <Authenticated>
-                <Button asChild type="button" size="lg">
-                  <Link to="/workspace">
-                    <ArrowRight className="size-4" />
-                    Continue in your workspace
-                  </Link>
-                </Button>
-              </Authenticated>
+              <Button asChild type="button" size="lg">
+                <Link to="/sign-up" search={redirectSearch}>
+                  <Sparkles className="size-4" />
+                  Get started for free
+                </Link>
+              </Button>
+              <Button asChild type="button" variant="outline" size="lg">
+                <Link to="/sign-in" search={redirectSearch}>
+                  <LogIn className="size-4" />
+                  Sign in
+                </Link>
+              </Button>
             </div>
           </div>
 
