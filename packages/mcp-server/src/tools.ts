@@ -1,20 +1,24 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import type { DocumentResponse, MemoriaClient, SearchResult } from "./client";
-import type { Logger } from "./logger";
+import type { DocumentResponse, MemoriaClient, SearchResult } from "./client.js";
+import type { Logger } from "./logger.js";
 
-const searchInputSchema = {
+const searchInputParams = {
   query: z.string().min(1, "query must be at least one character long").max(200),
   limit: z.number().int().min(1).max(10).optional(),
   sort: z.enum(["relevance", "recency"]).optional(),
-} as const;
+} satisfies Record<string, z.ZodTypeAny>;
 
-const getDocumentInputSchema = {
+const searchInputSchema = z.object(searchInputParams).strict();
+
+const getDocumentInputParams = {
   doc_handle: z
     .string()
     .min(3, "doc_handle must include a slug and suffix (e.g. design-doc-abc123)")
     .regex(/.+-.+/, "doc_handle must include a trailing -suffix"),
-} as const;
+} satisfies Record<string, z.ZodTypeAny>;
+
+const getDocumentInputSchema = z.object(getDocumentInputParams).strict();
 
 export function registerTools(server: McpServer, client: MemoriaClient, logger: Logger): void {
   registerSearchTool(server, client, logger);
@@ -28,10 +32,22 @@ function registerSearchTool(server: McpServer, client: MemoriaClient, logger: Lo
       title: "Search Memoria documents",
       description:
         "Searches your Memoria workspace documents by slug, title, and tags. Returns up to 10 results.",
-      inputSchema: searchInputSchema,
+      inputSchema: searchInputParams,
     },
-    async ({ query, limit, sort }) => {
-      logger.debug("Executing search_documents", { query, limit, sort });
+    async (rawInput) => {
+      logger.debug("Executing search_documents", rawInput);
+
+      const parsedInput = searchInputSchema.safeParse(rawInput);
+      if (!parsedInput.success) {
+        const message = formatValidationError(parsedInput.error);
+        logger.warn("search_documents validation error:", message);
+        return {
+          content: [{ type: "text", text: `Invalid search input: ${message}` }],
+          isError: true,
+        };
+      }
+
+      const { query, limit, sort } = parsedInput.data;
 
       try {
         const results = await client.searchDocuments({ query, limit, sort });
@@ -60,10 +76,22 @@ function registerGetDocumentTool(server: McpServer, client: MemoriaClient, logge
       title: "Retrieve Memoria document",
       description:
         "Fetches the full body of a Memoria document using its compound slug handle (e.g. design-doc-abc123). Responses are truncated at 800KB.",
-      inputSchema: getDocumentInputSchema,
+      inputSchema: getDocumentInputParams,
     },
-    async ({ doc_handle }) => {
-      logger.debug("Executing get_document", doc_handle);
+    async (rawInput) => {
+      logger.debug("Executing get_document", rawInput);
+
+      const parsedInput = getDocumentInputSchema.safeParse(rawInput);
+      if (!parsedInput.success) {
+        const message = formatValidationError(parsedInput.error);
+        logger.warn("get_document validation error:", message);
+        return {
+          content: [{ type: "text", text: `Invalid document handle: ${message}` }],
+          isError: true,
+        };
+      }
+
+      const { doc_handle } = parsedInput.data;
 
       try {
         const document = await client.getDocument(doc_handle);
@@ -113,4 +141,13 @@ function formatBytes(bytes: number): string {
     return `${(bytes / 1024).toFixed(1)} KB`;
   }
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatValidationError(error: z.ZodError): string {
+  return error.issues
+    .map((issue) => {
+      const path = issue.path.join(".") || "input";
+      return `${path}: ${issue.message}`;
+    })
+    .join("; ");
 }
