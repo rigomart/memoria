@@ -1,5 +1,11 @@
 # @mirdor/memoria-mcp
 
+## 0.0.3
+
+### Patch Changes
+
+- 337cb98: Add Vitest-based unit tests for Memoria MCP configuration and client behavior.
+
 ## 0.0.2
 
 ### Patch Changes
