@@ -12,7 +12,7 @@
   "scripts": {
     "dev": "bun run --filter @memoria/app dev",
     "build": "bun run --workspaces build",
-    "test": "bun run --filter @memoria/app test",
+    "test": "bun run --workspaces test",
     "lint": "bun run --workspaces lint",
     "check-types": "bun run --workspaces check-types",
     "convex:dev": "bun run --workspaces convex:dev",

@@ -27,7 +27,9 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "check-types": "tsc --noEmit",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "homepage": "https://github.com/rigomart/memoria#readme",
   "publishConfig": {
@@ -35,7 +37,8 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.1",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "vitest": "^3.2.4"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.20.1",
