@@ -1,0 +1,15 @@
+name: 'CI checks'
+runs:
+  using: 'composite'
+  steps:
+    - name: Run Biome
+      shell: bash
+      run: biome ci .
+
+    - name: Type check
+      shell: bash
+      run: bun run check-types
+
+    - name: Build
+      shell: bash
+      run: bun run build
