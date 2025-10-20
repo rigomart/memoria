@@ -29,6 +29,12 @@
 - Pull requests should describe scope, note any UI changes (screenshots recommended), and call out backend schema updates or migration steps.
 - Always run type-check and lint before submitting. Mention any expected lint warnings (e.g., Tailwind `@custom-variant`) in the PR description.
 
+## Release Workflow
+- Use Changesets for version bumps: after user-facing changes to the MCP server, run `bun run changeset` and commit the generated file.
+- When the Version Packages workflow opens its automated PR, review the changelog and merge it once checks pass.
+- Publish by tagging the target commit with `mcp-server-v<version>` (for example `mcp-server-v0.2.0`) and pushing the tag; the Publish MCP Server action handles `npm publish` using the `NPM_TOKEN` secret.
+- The app workspace stays private and is ignored by Changesets.
+
 ## Agent-Specific Instructions
 - Do not run `convex dev` or other long-lived processes when they may already be active; request results from the host instead.
 - Avoid destructive git commands (`reset --hard`, `checkout -- .`). Never revert user-owned changes unless explicitly asked.

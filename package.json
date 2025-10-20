@@ -15,6 +15,13 @@
     "test": "bun run --filter @memoria/app test",
     "lint": "bun run --workspaces lint",
     "check-types": "bun run --workspaces check-types",
-    "convex:dev": "bun run --workspaces convex:dev"
+    "convex:dev": "bun run --workspaces convex:dev",
+    "changeset": "changeset",
+    "changeset:version": "changeset version",
+    "changeset:publish": "changeset publish"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.2.5",
+    "@changesets/cli": "^2.27.9"
   }
 }
