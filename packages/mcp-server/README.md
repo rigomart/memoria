@@ -6,14 +6,14 @@ Personal access token–authenticated Model Context Protocol (MCP) server that l
 
 - Node.js 18+ (or any runtime with native `fetch`)
 - Installed dependencies (`bun install` from the repo root, or `npm install`/`pnpm install` inside this package)
+- Personal Access Token generated from the Memoria web app’s token management
 
 ## Environment Variables
 
-| Variable          | Required | Description                                                                       |
-| ----------------- | -------- | --------------------------------------------------------------------------------- |
-| `MEMORIA_API_URL` | ✅       | Base URL of your Convex deployment (e.g. `https://example.convex.cloud`)         |
-| `MEMORIA_PAT`     | ✅       | Personal Access Token generated in the Memoria app                                |
-| `DEBUG`           | optional | Set to `1`/`true` to enable verbose logging                                      |
+| Variable      | Required | Description                                                                 |
+| ------------- | -------- | --------------------------------------------------------------------------- |
+| `MEMORIA_PAT` | ✅       | Personal Access Token           |
+| `DEBUG`       | optional | Set to `true` to enable verbose logging                                |
 
 ## Build & Run
 
@@ -24,7 +24,7 @@ bun install          # or npm/pnpm equivalent
 bun run build        # runs tsc and emits dist/
 
 # start the MCP server (stdio transport)
-MEMORIA_API_URL=https://... MEMORIA_PAT=mem_... node dist/index.js
+MEMORIA_PAT=mem_... node dist/index.js
 ```
 
 ## MCP Client Configuration
@@ -38,7 +38,6 @@ MEMORIA_API_URL=https://... MEMORIA_PAT=mem_... node dist/index.js
       "command": "node",
       "args": ["./path/to/dist/index.js"],
       "env": {
-        "MEMORIA_API_URL": "https://your.convex.cloud",
         "MEMORIA_PAT": "mem_your_token_here"
       }
     }
@@ -55,7 +54,6 @@ MEMORIA_API_URL=https://... MEMORIA_PAT=mem_... node dist/index.js
       "command": "node",
       "args": ["./path/to/dist/index.js"],
       "env": {
-        "MEMORIA_API_URL": "https://your.convex.cloud",
         "MEMORIA_PAT": "mem_your_token_here"
       }
     }
@@ -76,4 +74,5 @@ Each tool returns human-readable text plus structured JSON content so clients ca
 
 - Documents are identified by their compound slug (`{slug}-{suffix}`) and truncated server-side at 800 KB to respect Convex limits.
 - On startup the MCP server verifies the PAT by issuing a test search; misconfiguration results in a clear error before connecting.
+- The server connects to Memoria’s HTTP server; the base URL is fixed and does not require configuration.
 - Set `DEBUG=1` to log outbound Memoria API requests and MCP tool execution details.
