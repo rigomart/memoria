@@ -1,8 +1,8 @@
 import { createFileRoute, Navigate, Outlet } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
-import { AuthPatternPanel } from "@/components/auth-pattern-panel";
 import { LandingHeader } from "@/components/landing-header";
 import { Spinner } from "@/components/ui/spinner";
+import { AuthPatternPanel } from "@/routes/_unauthenticated/-components/auth-pattern-panel";
 
 export const Route = createFileRoute("/_unauthenticated")({
   validateSearch: (search) =>

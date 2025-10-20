@@ -12,7 +12,7 @@ type LandingHeaderProps = {
 export function LandingHeader({ redirect }: LandingHeaderProps) {
   return (
     <header className="border-b border-border/70 bg-gradient-to-b from-background/95 via-background/90 to-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/75">
-      <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between gap-6 px-4">
+      <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between gap-6 px-4">
         <Link
           to="/"
           className="text-foreground"

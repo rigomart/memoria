@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Brain, LogIn, RefreshCw, Sparkles, Zap } from "lucide-react";
+import { PatternBackground } from "@/components/pattern-background";
 import { Button } from "@/components/ui/button";
 import { LandingHeader } from "../components/landing-header";
 
@@ -121,11 +122,13 @@ function HomeRoute() {
           </div>
         </section>
       </main>
-      <footer className="border-t border-border/70 bg-background/95">
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-2 px-4 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <span>Built for developers who work with AI agents.</span>
-        </div>
-      </footer>
+      <PatternBackground>
+        <footer className="border-t border-border/70 bg-background/50 h-full">
+          <div className="mx-auto flex w-full max-w-5xl flex-col gap-2 px-4 py-4 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+            <span>Built for developers who work with AI agents.</span>
+          </div>
+        </footer>
+      </PatternBackground>
     </div>
   );
 }
