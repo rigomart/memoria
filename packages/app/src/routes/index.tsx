@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
 import { ArrowRight, Brain, LogIn, RefreshCw, Sparkles, UserPlus, Zap } from "lucide-react";
-
+import { SiteBrand } from "@/components/site-brand";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -24,18 +24,9 @@ function HomeRoute() {
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-background text-foreground">
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.28),_transparent_55%),_radial-gradient(circle_at_bottom,_rgba(16,185,129,0.22),_transparent_60%),_repeating-linear-gradient(90deg,_rgba(148,163,184,0.12)_0,_rgba(148,163,184,0.12)_1px,transparent_1px,transparent_120px),_repeating-linear-gradient(0deg,_rgba(148,163,184,0.12)_0,_rgba(148,163,184,0.12)_1px,transparent_1px,transparent_120px)]" />
       <header className="border-b border-border/70 bg-gradient-to-b from-background/95 via-background/90 to-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/75">
-        <div className="mx-auto flex h-12 w-full max-w-5xl items-center justify-between gap-6 px-4">
-          <Link
-            to="/"
-            className="flex items-center gap-2 rounded-full bg-primary/10 px-2 py-1 text-sm font-medium text-primary"
-            search={redirectSearch}
-          >
-            <span className="flex items-center gap-2">
-              <span className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">
-                <Brain className="size-5" />
-              </span>
-              <span>Memoria</span>
-            </span>
+        <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between gap-6 px-4">
+          <Link to="/" className="text-foreground" search={redirectSearch}>
+            <SiteBrand />
           </Link>
           <nav className="flex items-center gap-2 text-xs sm:text-sm">
             <AuthLoading>

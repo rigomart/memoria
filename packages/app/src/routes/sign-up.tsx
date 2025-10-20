@@ -1,7 +1,7 @@
 import { SignUp } from "@clerk/clerk-react";
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
-
+import { AuthPatternPanel } from "@/components/auth-pattern-panel";
 import { Header } from "@/components/header";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -36,24 +36,36 @@ function SignUpRoute() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
-      <main className="flex flex-1 items-center justify-center px-4 py-12">
-        <div className="flex w-full max-w-md flex-col gap-6 rounded-3xl border border-border/60 bg-card/60 p-8 text-center shadow-lg shadow-primary/10 backdrop-blur-sm">
-          <div className="space-y-2">
-            <h1 className="text-2xl font-semibold">Create your account</h1>
-            <p className="text-sm text-muted-foreground">
-              Start organizing your specs, plans, and conventions in one place.
-            </p>
-          </div>
-          <SignUp
-            redirectUrl={target}
-            afterSignUpUrl={target}
-            signInUrl={redirect ? `/sign-in?redirect=${encodeURIComponent(redirect)}` : "/sign-in"}
-            appearance={{
-              elements: {
-                footerAction: "hidden",
-              },
-            }}
-          />
+      <main className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col md:grid md:grid-cols-2">
+          <section className="flex flex-1 items-center justify-center px-6 py-12 sm:px-10 lg:px-16">
+            <div className="w-full max-w-md space-y-8">
+              <div className="space-y-2 text-center md:text-left">
+                <span className="inline-flex items-center justify-center rounded-full border border-border/70 bg-muted/30 px-3 py-1 text-xs font-medium uppercase tracking-[0.25em] text-muted-foreground">
+                  Sign up
+                </span>
+                <h1 className="text-3xl font-semibold tracking-tight">Create your account</h1>
+                <p className="text-sm text-muted-foreground">
+                  Start organizing your specs, plans, and conventions in one place.
+                </p>
+              </div>
+              <div className="rounded-3xl border border-border/60 bg-card/70 p-6 shadow-xl shadow-primary/10 backdrop-blur">
+                <SignUp
+                  redirectUrl={target}
+                  afterSignUpUrl={target}
+                  signInUrl={
+                    redirect ? `/sign-in?redirect=${encodeURIComponent(redirect)}` : "/sign-in"
+                  }
+                  appearance={{
+                    elements: {
+                      footerAction: "hidden",
+                    },
+                  }}
+                />
+              </div>
+            </div>
+          </section>
+          <AuthPatternPanel />
         </div>
       </main>
     </div>
