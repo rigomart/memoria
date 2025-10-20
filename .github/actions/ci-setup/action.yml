@@ -11,4 +11,5 @@ runs:
         version: 2.2.5
 
     - name: Install dependencies
+      shell: bash
       run: bun ci
