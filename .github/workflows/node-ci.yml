@@ -4,9 +4,21 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'packages/**'
+      - 'bun.lock'
+      - 'package.json'
+      - '.github/workflows/**'
+      - '.changeset/**'
   pull_request:
     branches:
       - main
+    paths:
+      - 'packages/**'
+      - 'bun.lock'
+      - 'package.json'
+      - '.github/workflows/**'
+      - '.changeset/**'
 
 jobs:
   ci:
