@@ -131,11 +131,11 @@ searchDocuments({
 
 ```json
 {
-  "name": "@memoria/mcp-server",
+  "name": "@contextor/mcp-server",
   "version": "0.1.0",
   "type": "module",
   "bin": {
-    "memoria-mcp": "./dist/index.js"
+    "contextor-mcp": "./dist/index.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "latest"
@@ -148,7 +148,7 @@ searchDocuments({
 `packages/mcp-server/src/index.ts`:
 
 1. **Startup validation**:
-   - Env vars: `MEMORIA_API_URL`, `MEMORIA_PAT`
+   - Env vars: `CONTEXTOR_API_URL`, `CONTEXTOR_PAT`
    - Test token validity (project handle removed)
 
 2. **Tool: search**:
@@ -211,7 +211,7 @@ bun add @modelcontextprotocol/sdk
 
 ### Environment
 
-- Document how to find Convex deployment URL for `MEMORIA_API_URL`
+- Document how to find Convex deployment URL for `CONTEXTOR_API_URL`
 - Clarify PAT creation flow in settings UI docs
 
 ## Acceptance Criteria
@@ -226,7 +226,7 @@ bun add @modelcontextprotocol/sdk
 **Iteration 4:**
 
 - Users can generate/delete PATs; hashes stored with constant-time validation
-- MCP server connects via stdio with `MEMORIA_API_URL` + `MEMORIA_PAT`
+- MCP server connects via stdio with `CONTEXTOR_API_URL` + `CONTEXTOR_PAT`
 - `/mcp/search` returns expected results using improved scoring/limit parameters
 - `/mcp/get_document` returns body (max 800KB) without frontmatter/max_bytes args
 - Clear error message on invalid PAT at startup

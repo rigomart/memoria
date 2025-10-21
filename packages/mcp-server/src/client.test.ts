@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { MemoriaClient } from "./client.js";
+import { ContextorClient } from "./client.js";
 import type { AppConfig } from "./config.js";
 import type { Logger } from "./logger.js";
 
@@ -18,7 +18,7 @@ function createLoggerMock(): Logger {
   };
 }
 
-describe("MemoriaClient", () => {
+describe("ContextorClient", () => {
   let fetchMock: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
@@ -42,7 +42,7 @@ describe("MemoriaClient", () => {
       }),
     );
 
-    const client = new MemoriaClient(config, createLoggerMock());
+    const client = new ContextorClient(config, createLoggerMock());
     const results = await client.searchDocuments({ query: "status", limit: 3, sort: "relevance" });
 
     expect(results).toEqual(responseBody);
@@ -69,10 +69,10 @@ describe("MemoriaClient", () => {
       }),
     );
 
-    const client = new MemoriaClient(config, createLoggerMock());
+    const client = new ContextorClient(config, createLoggerMock());
 
     await expect(client.searchDocuments({ query: "fail" })).rejects.toThrow(
-      /Memoria API request failed \(500 Internal Server Error\): server exploded/,
+      /Contextor API request failed \(500 Internal Server Error\): server exploded/,
     );
   });
 
@@ -84,10 +84,10 @@ describe("MemoriaClient", () => {
       }),
     );
 
-    const client = new MemoriaClient(config, createLoggerMock());
+    const client = new ContextorClient(config, createLoggerMock());
 
     await expect(client.searchDocuments({ query: "bad-data" })).rejects.toThrow(
-      /Unexpected response from Memoria API/,
+      /Unexpected response from Contextor API/,
     );
   });
 
@@ -105,7 +105,7 @@ describe("MemoriaClient", () => {
       }),
     );
 
-    const client = new MemoriaClient(config, createLoggerMock());
+    const client = new ContextorClient(config, createLoggerMock());
     const document = await client.getDocument("doc-handle");
 
     expect(document).toEqual(responseBody);
@@ -115,7 +115,7 @@ describe("MemoriaClient", () => {
   });
 
   it("verifyConnection delegates to searchDocuments and bubbles up errors", async () => {
-    const client = new MemoriaClient(config, createLoggerMock());
+    const client = new ContextorClient(config, createLoggerMock());
     const searchSpy = vi.spyOn(client, "searchDocuments").mockResolvedValue([]);
 
     await expect(client.verifyConnection()).resolves.toBeUndefined();
@@ -123,7 +123,7 @@ describe("MemoriaClient", () => {
 
     searchSpy.mockRejectedValueOnce(new Error("down"));
     await expect(client.verifyConnection()).rejects.toThrow(
-      "Failed to verify Memoria MCP connectivity: down",
+      "Failed to verify Contextor MCP connectivity: down",
     );
   });
 });

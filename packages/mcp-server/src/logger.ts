@@ -9,13 +9,13 @@ export function createLogger(enabled: boolean): Logger {
   const noop = () => undefined;
 
   const base = {
-    info: console.error.bind(console, "[memoria-mcp]"),
-    warn: console.warn.bind(console, "[memoria-mcp]"),
-    error: console.error.bind(console, "[memoria-mcp]"),
+    info: console.error.bind(console, "[contextor-mcp]"),
+    warn: console.warn.bind(console, "[contextor-mcp]"),
+    error: console.error.bind(console, "[contextor-mcp]"),
   };
 
   return {
     ...base,
-    debug: enabled ? console.error.bind(console, "[memoria-mcp]") : noop,
+    debug: enabled ? console.error.bind(console, "[contextor-mcp]") : noop,
   };
 }

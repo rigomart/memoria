@@ -1,6 +1,6 @@
 # Convex Backend Overview
 
-This directory contains the Convex schema, queries, mutations, and HTTP handlers that power Memoria’s document workspace and external MCP integrations.
+This directory contains the Convex schema, queries, mutations, and HTTP handlers that power Contextor's document workspace and external MCP integrations.
 
 ---
 
@@ -53,6 +53,6 @@ This directory contains the Convex schema, queries, mutations, and HTTP handlers
 ---
 
 ### Developer Tips
-- Always use the internal document helpers when authenticating via PATs inside actions; `requireUserId` won’t work in HTTP contexts.
+- Always use the internal document helpers when authenticating via PATs inside actions; `requireUserId` won't work in HTTP contexts.
 - HTTP handlers should never return the raw token hash. Only expose the clear token at creation time.
 - When adjusting document size limits, update both `MAX_DOCUMENT_SIZE_BYTES` in `documents.ts` and the hard cap in `mcpGetDocument`.

@@ -4,7 +4,7 @@ import { loadConfig } from "./config.js";
 describe("loadConfig", () => {
   it("returns expected configuration with debug disabled by default", () => {
     const config = loadConfig({
-      MEMORIA_PAT: "secret-token",
+      CONTEXTOR_PAT: "secret-token",
     });
 
     expect(config).toEqual({
@@ -15,18 +15,18 @@ describe("loadConfig", () => {
   });
 
   it("parses DEBUG variations into booleans", () => {
-    expect(loadConfig({ MEMORIA_PAT: "token", DEBUG: "1" }).debug).toBe(true);
-    expect(loadConfig({ MEMORIA_PAT: "token", DEBUG: "true" }).debug).toBe(true);
-    expect(loadConfig({ MEMORIA_PAT: "token", DEBUG: "false" }).debug).toBe(false);
+    expect(loadConfig({ CONTEXTOR_PAT: "token", DEBUG: "1" }).debug).toBe(true);
+    expect(loadConfig({ CONTEXTOR_PAT: "token", DEBUG: "true" }).debug).toBe(true);
+    expect(loadConfig({ CONTEXTOR_PAT: "token", DEBUG: "false" }).debug).toBe(false);
   });
 
-  it("throws helpful error when MEMORIA_PAT is empty", () => {
-    expect(() => loadConfig({ MEMORIA_PAT: "" })).toThrow(
-      /MEMORIA_PAT must be a non-empty personal access token/,
+  it("throws helpful error when CONTEXTOR_PAT is empty", () => {
+    expect(() => loadConfig({ CONTEXTOR_PAT: "" })).toThrow(
+      /CONTEXTOR_PAT must be a non-empty personal access token/,
     );
   });
 
-  it("throws error when MEMORIA_PAT is missing entirely", () => {
+  it("throws error when CONTEXTOR_PAT is missing entirely", () => {
     expect(() => loadConfig({})).toThrow(/Invalid environment configuration/);
   });
 });

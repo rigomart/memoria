@@ -32,11 +32,11 @@
 
 # Iteration 4 — MCP Server (stdio) + Two Tools + PAT Auth
 
-**Goal:** Agents can retrieve Memoria content locally with secure authentication.
+**Goal:** Agents can retrieve Contextor content locally with secure authentication.
 
-* Package **`@memoria/mcp-server`** (standalone, stdio).
+* Package **`@contextor/mcp-server`** (standalone, stdio).
 * **User-level PAT authentication:** Generate Personal Access Tokens (hashed SHA-256) via settings UI.
-* **Env-only config (no flags):** `MEMORIA_API_URL`, `MEMORIA_PAT`.
+* **Env-only config (no flags):** `CONTEXTOR_API_URL`, `CONTEXTOR_PAT`.
 * On startup: validate PAT; if invalid → consistent "Invalid token—generate a new PAT from settings."
 * **Tools:**
 

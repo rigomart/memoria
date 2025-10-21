@@ -1,22 +1,22 @@
-# Memoria — Project Overview
+# Contextor — Project Overview
 
-## 1. What Memoria Is
+## 1. What Contextor Is
 
-Memoria is a **context store for AI agents** that helps you create and maintain project specs, plans, and conventions—then makes them automatically available to your AI tools. Write specs with AI assistance, store them once, and your AI agent pulls exactly what it needs without manual context management.
+Contextor is a **context store for AI agents** that helps you create and maintain project specs, plans, and conventions—then makes them automatically available to your AI tools. Write specs with AI assistance, store them once, and your AI agent pulls exactly what it needs without manual context management.
 
 **Problem:** Working with AI agents means constantly managing context. You paste the same specs, conventions, and plans into chat after chat. Context windows fill up fast, and keeping the AI aligned with your project intent becomes manual overhead. Plus, writing comprehensive specs takes time.
 
-**Solution:** Use Memoria's AI-assisted writing tools to draft feature specs, PRDs, implementation plans, and conventions quickly. Store them in structured Markdown. AI agents retrieve relevant docs automatically through MCP (Model Context Protocol) when they need context—you create it once (with AI help), the agent finds it on its own.
+**Solution:** Use Contextor's AI-assisted writing tools to draft feature specs, PRDs, implementation plans, and conventions quickly. Store them in structured Markdown. AI agents retrieve relevant docs automatically through MCP (Model Context Protocol) when they need context—you create it once (with AI help), the agent finds it on its own.
 
 Key terms used throughout this document:
 
 * **ADR (Architecture Decision Record):** A short write-up that explains an important technical decision and why it was made.
 * **NSM (North Star Metric):** The single metric we treat as the main measure of product success.
-* **MCP (Model Context Protocol):** The protocol we use to let AI agents communicate with Memoria.
+* **MCP (Model Context Protocol):** The protocol we use to let AI agents communicate with Contextor.
 
 ## 2. Scope
 
-**Included in Memoria:**
+**Included in Contextor:**
 * Feature specs, PRDs, and implementation plans (primary use case)
 * High-level project roadmaps and technical strategy
 * Architecture and system design notes
@@ -66,7 +66,7 @@ All other features connect to these two through clear interfaces.
 Helps the core succeed and stay healthy.
 
 1. **Local IDE Companion + MCP/CLI Integration** *(Core — moved from Supporting)*
-   *Impact:* This is essential to the value proposition. Gives developers and AI agents low-latency access in their editor. Includes a local cache at `~/.memoria/<workspace>`, change detection using manifest and ETag comparisons, and MCP tools such as `memory.search`, `memory.get`, and `memory.list`. Responses stay within budgeted token sizes.
+   *Impact:* This is essential to the value proposition. Gives developers and AI agents low-latency access in their editor. Includes a local cache at `~/.contextor/<workspace>`, change detection using manifest and ETag comparisons, and MCP tools such as `memory.search`, `memory.get`, and `memory.list`. Responses stay within budgeted token sizes.
 2. **Memory Quality Tools**
    *Impact:* Keeps specs current. Tracks last-updated timestamps, usage, and gives nudges when specs drift from reality. Supports planned deprecations and shows author confidence levels so AI agents know which docs to trust most.
 3. **AI Writing Support** *(candidate for Core)*

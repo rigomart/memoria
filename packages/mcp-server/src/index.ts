@@ -2,7 +2,7 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { MemoriaClient } from "./client.js";
+import { ContextorClient } from "./client.js";
 import { loadConfig } from "./config.js";
 import { createLogger } from "./logger.js";
 import { registerTools } from "./tools.js";
@@ -11,13 +11,13 @@ async function main() {
   const config = loadConfig(process.env);
   const logger = createLogger(config.debug);
 
-  logger.info("Starting Memoria MCP server…");
+  logger.info("Starting Contextor MCP server…");
 
-  const client = new MemoriaClient(config, logger);
+  const client = new ContextorClient(config, logger);
   await client.verifyConnection();
 
   const server = new McpServer({
-    name: "memoria-mcp",
+    name: "contextor-mcp",
     version: "0.1.0",
   });
 
@@ -26,7 +26,7 @@ async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
 
-  logger.info("Memoria MCP server connected. Waiting for requests…");
+  logger.info("Contextor MCP server connected. Waiting for requests…");
 
   const shutdown = async (signal: NodeJS.Signals) => {
     logger.info(`Received ${signal}, shutting down…`);
@@ -51,6 +51,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error("[memoria-mcp]", error instanceof Error ? error.message : error);
+  console.error("[contextor-mcp]", error instanceof Error ? error.message : error);
   process.exit(1);
 });

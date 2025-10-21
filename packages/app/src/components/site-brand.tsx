@@ -16,7 +16,7 @@ export function SiteBrand({ className, hideTextOnMobile = false }: SiteBrandProp
       <span
         className={cn("flex flex-col leading-tight", hideTextOnMobile ? "hidden sm:flex" : "flex")}
       >
-        <span className="font-semibold">Memoria</span>
+        <span className="font-semibold">Contextor</span>
       </span>
     </span>
   );

@@ -31,8 +31,8 @@ function HomeRoute() {
               Stop pasting specs into every chat
             </h1>
             <p className="text-base text-muted-foreground sm:text-lg">
-              Use AI to draft project plans, specs, and conventions quickly. Store them in Memoria,
-              and your AI agent pulls exactly what it needs automatically.
+              Use AI to draft project plans, specs, and conventions quickly. Store them in
+              Contextor, and your AI agent pulls exactly what it needs automatically.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
               <Button asChild type="button" size="lg">
@@ -70,7 +70,7 @@ function HomeRoute() {
                 </div>
               </div>
 
-              {/* Step 2: Store in Memoria */}
+              {/* Step 2: Store in Contextor */}
               <div className="group relative">
                 <div className="rounded-xl border border-border/60 bg-card/50 p-6 backdrop-blur-sm transition-all hover:border-border hover:bg-card/80 shadow-md">
                   <div className="mb-4 flex size-12 items-center justify-center rounded-lg bg-primary/10">
@@ -78,7 +78,7 @@ function HomeRoute() {
                   </div>
                   <h3 className="text-lg font-semibold">Store Once</h3>
                   <p className="mt-2 text-sm text-muted-foreground">
-                    Save to Memoria with structured metadata
+                    Save to Contextor with structured metadata
                   </p>
                 </div>
                 {/* Arrow */}
