@@ -27,7 +27,7 @@ type SearchArgs = {
   sort?: "relevance" | "recency";
 };
 
-export class MemoriaClient {
+export class ContextorClient {
   constructor(
     private readonly config: AppConfig,
     private readonly logger: Logger,
@@ -36,9 +36,9 @@ export class MemoriaClient {
   async verifyConnection(): Promise<void> {
     try {
       await this.searchDocuments({ query: "ping", limit: 1 });
-      this.logger.debug("Verified Memoria MCP connectivity.");
+      this.logger.debug("Verified Contextor MCP connectivity.");
     } catch (error) {
-      throw new Error(`Failed to verify Memoria MCP connectivity: ${(error as Error).message}`);
+      throw new Error(`Failed to verify Contextor MCP connectivity: ${(error as Error).message}`);
     }
   }
 
@@ -82,14 +82,14 @@ export class MemoriaClient {
     if (!response.ok) {
       const text = await safeReadText(response);
       throw new Error(
-        `Memoria API request failed (${response.status} ${response.statusText}): ${text}`,
+        `Contextor API request failed (${response.status} ${response.statusText}): ${text}`,
       );
     }
 
     const data = await response.json();
     const parseResult = schema.safeParse(data);
     if (!parseResult.success) {
-      throw new Error(`Unexpected response from Memoria API: ${parseResult.error.message}`);
+      throw new Error(`Unexpected response from Contextor API: ${parseResult.error.message}`);
     }
     return parseResult.data;
   }

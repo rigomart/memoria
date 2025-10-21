@@ -120,8 +120,8 @@ function SettingsPage() {
                 Personal Access Tokens
               </h1>
               <p className="text-sm text-muted-foreground">
-                Tokens authenticate MCP clients against your Memoria workspace. Each token is shown
-                only once.
+                Tokens authenticate MCP clients against your Contextor workspace. Each token is
+                shown only once.
               </p>
             </div>
             <Button

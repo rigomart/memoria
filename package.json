@@ -1,5 +1,5 @@
 {
-  "name": "memoria",
+  "name": "contextor",
   "private": true,
   "workspaces": [
     "packages/*"
@@ -10,7 +10,7 @@
     "bun": ">=1.1.0"
   },
   "scripts": {
-    "dev": "bun run --filter @memoria/app dev",
+    "dev": "bun run --filter @contextor/app dev",
     "build": "bun run --workspaces build",
     "test": "bun run --workspaces test",
     "lint": "bun run --workspaces lint",
@@ -19,7 +19,7 @@
     "changeset": "changeset",
     "changeset:version": "changeset version",
     "changeset:publish": "changeset publish",
-    "release": "bun run --filter @mirdor/memoria-mcp build && bun run changeset:publish"
+    "release": "bun run --filter @mirdor/contextor-mcp build && bun run changeset:publish"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.5",

@@ -32,7 +32,7 @@
 ## Release Workflow
 - Use Changesets for version bumps: after user-facing changes to the MCP server, run `bun run changeset` and commit the generated file.
 - The `Release` workflow opens an automated “Version Packages” PR on pushes to `main`; review the generated changelog/version bump and merge when ready.
-- Once that PR merges back to `main`, the same workflow reruns, executes `bun run release`, and publishes `@mirdor/memoria-mcp` to npm using the `NPM_TOKEN` secret—no manual tagging required.
+- Once that PR merges back to `main`, the same workflow reruns, executes `bun run release`, and publishes `@mirdor/contextor-mcp` to npm using the `NPM_TOKEN` secret—no manual tagging required.
 - The app workspace stays private and is ignored by Changesets.
 
 ## Agent-Specific Instructions

@@ -1,6 +1,6 @@
-# Memoria Monorepo
+# Contextor Monorepo
 
-Memoria is a **context store for AI agents**. It helps teams draft specs, PRDs, plans, and conventions with AI assistance, store them once, and let agents retrieve relevant context automatically via MCP—no more manual copy/paste of project knowledge.
+Contextor is a **context store for AI agents**. It helps teams draft specs, PRDs, plans, and conventions with AI assistance, store them once, and let agents retrieve relevant context automatically via MCP—no more manual copy/paste of project knowledge.
 
 This repository is a Bun-powered monorepo. The primary application lives in `packages/app`, and supporting assets (documentation, MCP tooling experiments, etc.) live alongside it.
 
@@ -13,7 +13,7 @@ bun install
 
 ### Useful Commands
 
-- `bun run dev` – start the Memoria app locally (Vite dev server)
+- `bun run dev` – start the Contextor app locally (Vite dev server)
 - `bun run build` – build all workspaces (use `--filter <workspace>` for targeted builds)
 - `bun run check-types` – run TypeScript project references in no-emit mode
 - `bun run lint` – run Biome with autofix enabled

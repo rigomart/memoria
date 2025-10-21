@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import type { DocumentResponse, MemoriaClient, SearchResult } from "./client.js";
+import type { ContextorClient, DocumentResponse, SearchResult } from "./client.js";
 import type { Logger } from "./logger.js";
 
 const searchInputParams = {
@@ -20,18 +20,18 @@ const getDocumentInputParams = {
 
 const getDocumentInputSchema = z.object(getDocumentInputParams).strict();
 
-export function registerTools(server: McpServer, client: MemoriaClient, logger: Logger): void {
+export function registerTools(server: McpServer, client: ContextorClient, logger: Logger): void {
   registerSearchTool(server, client, logger);
   registerGetDocumentTool(server, client, logger);
 }
 
-function registerSearchTool(server: McpServer, client: MemoriaClient, logger: Logger): void {
+function registerSearchTool(server: McpServer, client: ContextorClient, logger: Logger): void {
   server.registerTool(
     "search_documents",
     {
-      title: "Search Memoria documents",
+      title: "Search Contextor documents",
       description:
-        "Searches your Memoria workspace documents by slug, title, and tags. Returns up to 10 results.",
+        "Searches your Contextor workspace documents by slug, title, and tags. Returns up to 10 results.",
       inputSchema: searchInputParams,
     },
     async (rawInput) => {
@@ -69,13 +69,13 @@ function registerSearchTool(server: McpServer, client: MemoriaClient, logger: Lo
   );
 }
 
-function registerGetDocumentTool(server: McpServer, client: MemoriaClient, logger: Logger): void {
+function registerGetDocumentTool(server: McpServer, client: ContextorClient, logger: Logger): void {
   server.registerTool(
     "get_document",
     {
-      title: "Retrieve Memoria document",
+      title: "Retrieve Contextor document",
       description:
-        "Fetches the full body of a Memoria document using its compound slug handle (e.g. design-doc-abc123). Responses are truncated at 800KB.",
+        "Fetches the full body of a Contextor document using its compound slug handle (e.g. design-doc-abc123). Responses are truncated at 800KB.",
       inputSchema: getDocumentInputParams,
     },
     async (rawInput) => {

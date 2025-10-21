@@ -1,19 +1,19 @@
 {
-  "name": "@mirdor/memoria-mcp",
+  "name": "@mirdor/contextor-mcp",
   "version": "0.0.3",
-  "description": "Memoria MCP Server",
+  "description": "Contextor MCP Server",
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/rigomart/memoria"
+    "url": "https://github.com/rigomart/contextor"
   },
   "author": "Miguel Rodriguez",
   "license": "MIT",
   "bin": {
-    "memoria-mcp": "./dist/index.js"
+    "contextor-mcp": "./dist/index.js"
   },
   "keywords": [
-    "memoria",
+    "contextor",
     "mcp",
     "server"
   ],
@@ -31,7 +31,7 @@
     "test": "vitest run",
     "test:watch": "vitest"
   },
-  "homepage": "https://github.com/rigomart/memoria#readme",
+  "homepage": "https://github.com/rigomart/contextor#readme",
   "publishConfig": {
     "access": "public"
   },

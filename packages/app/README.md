@@ -1,6 +1,6 @@
-# Memoria — Context Store Application
+# Contextor — Context Store Application
 
-Memoria is a **context store for AI agents**. It helps teams draft specs, PRDs, implementation plans, and conventions with AI assistance, store them once, and let their agents retrieve the right context automatically through the Model Context Protocol (MCP).
+Contextor is a **context store for AI agents**. It helps teams draft specs, PRDs, implementation plans, and conventions with AI assistance, store them once, and let their agents retrieve the right context automatically through the Model Context Protocol (MCP).
 
 This package contains the primary React/Convex implementation of that experience.
 
