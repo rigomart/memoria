@@ -1,17 +1,16 @@
 import { createFileRoute, Navigate, Outlet } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
+import z from "zod/v3";
 import { LandingHeader } from "@/components/landing-header";
 import { Spinner } from "@/components/ui/spinner";
 import { AuthPatternPanel } from "@/routes/_unauthenticated/-components/auth-pattern-panel";
 
+const searchSchema = z.object({
+  redirect: z.string().optional(),
+});
+
 export const Route = createFileRoute("/_unauthenticated")({
-  validateSearch: (search) =>
-    ({
-      redirect:
-        typeof search.redirect === "string" && search.redirect.length > 0
-          ? search.redirect
-          : undefined,
-    }) satisfies { redirect?: string },
+  validateSearch: searchSchema,
   component: UnauthenticatedLayout,
 });
 

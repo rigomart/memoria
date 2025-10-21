@@ -1,17 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Brain, LogIn, RefreshCw, Sparkles, Zap } from "lucide-react";
+import { z } from "zod/v3";
 import { PatternBackground } from "@/components/pattern-background";
 import { Button } from "@/components/ui/button";
 import { LandingHeader } from "../components/landing-header";
 
+const searchSchema = z.object({
+  redirect: z.string().optional(),
+});
+
 export const Route = createFileRoute("/")({
-  validateSearch: (search) =>
-    ({
-      redirect:
-        typeof search.redirect === "string" && search.redirect.length > 0
-          ? search.redirect
-          : undefined,
-    }) satisfies { redirect?: string },
+  validateSearch: searchSchema,
   component: HomeRoute,
 });
 
