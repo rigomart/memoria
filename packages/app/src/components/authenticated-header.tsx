@@ -1,7 +1,7 @@
 import { UserButton } from "@clerk/clerk-react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Authenticated, AuthLoading } from "convex/react";
-import { Brain } from "lucide-react";
+import { SiteBrand } from "@/components/site-brand";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 
@@ -12,16 +12,10 @@ export function AuthenticatedHeader() {
 
   return (
     <header className="sticky top-0 z-30 border-b border-border/70 bg-gradient-to-b from-background/95 via-background/90 to-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/75">
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-6">
-          <Link to="/workspace" className="flex items-center gap-2 text-foreground">
-            <span className="flex size-9 items-center justify-center rounded-full bg-primary text-base font-semibold text-primary-foreground shadow-sm shadow-primary/40">
-              <Brain className="size-5" />
-            </span>
-            <span className="hidden flex-col leading-tight sm:flex">
-              <span className="text-sm font-semibold uppercase tracking-wider">Memoria</span>
-              <span className="text-xs text-muted-foreground">Knowledge workspace</span>
-            </span>
+          <Link to="/workspace" className="text-foreground">
+            <SiteBrand hideTextOnMobile />
           </Link>
           <nav className="flex items-center gap-4 text-sm">
             <Link

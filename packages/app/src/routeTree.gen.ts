@@ -9,13 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UnauthenticatedRouteRouteImport } from './routes/_unauthenticated/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as UnauthenticatedSignUpRouteImport } from './routes/_unauthenticated/sign-up'
+import { Route as UnauthenticatedSignInRouteImport } from './routes/_unauthenticated/sign-in'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedWorkspaceRouteRouteImport } from './routes/_authenticated/workspace/route'
 import { Route as AuthenticatedWorkspaceIndexRouteImport } from './routes/_authenticated/workspace/index'
 import { Route as AuthenticatedWorkspaceDocHandleIndexRouteImport } from './routes/_authenticated/workspace/$docHandle/index'
 
+const UnauthenticatedRouteRoute = UnauthenticatedRouteRouteImport.update({
+  id: '/_unauthenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -24,6 +31,16 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const UnauthenticatedSignUpRoute = UnauthenticatedSignUpRouteImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
+  getParentRoute: () => UnauthenticatedRouteRoute,
+} as any)
+const UnauthenticatedSignInRoute = UnauthenticatedSignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => UnauthenticatedRouteRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
@@ -53,12 +70,16 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/workspace': typeof AuthenticatedWorkspaceRouteRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
+  '/sign-in': typeof UnauthenticatedSignInRoute
+  '/sign-up': typeof UnauthenticatedSignUpRoute
   '/workspace/': typeof AuthenticatedWorkspaceIndexRoute
   '/workspace/$docHandle': typeof AuthenticatedWorkspaceDocHandleIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/sign-in': typeof UnauthenticatedSignInRoute
+  '/sign-up': typeof UnauthenticatedSignUpRoute
   '/workspace': typeof AuthenticatedWorkspaceIndexRoute
   '/workspace/$docHandle': typeof AuthenticatedWorkspaceDocHandleIndexRoute
 }
@@ -66,8 +87,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/_unauthenticated': typeof UnauthenticatedRouteRouteWithChildren
   '/_authenticated/workspace': typeof AuthenticatedWorkspaceRouteRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_unauthenticated/sign-in': typeof UnauthenticatedSignInRoute
+  '/_unauthenticated/sign-up': typeof UnauthenticatedSignUpRoute
   '/_authenticated/workspace/': typeof AuthenticatedWorkspaceIndexRoute
   '/_authenticated/workspace/$docHandle/': typeof AuthenticatedWorkspaceDocHandleIndexRoute
 }
@@ -77,16 +101,27 @@ export interface FileRouteTypes {
     | '/'
     | '/workspace'
     | '/settings'
+    | '/sign-in'
+    | '/sign-up'
     | '/workspace/'
     | '/workspace/$docHandle'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/settings' | '/workspace' | '/workspace/$docHandle'
+  to:
+    | '/'
+    | '/settings'
+    | '/sign-in'
+    | '/sign-up'
+    | '/workspace'
+    | '/workspace/$docHandle'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/_unauthenticated'
     | '/_authenticated/workspace'
     | '/_authenticated/settings'
+    | '/_unauthenticated/sign-in'
+    | '/_unauthenticated/sign-up'
     | '/_authenticated/workspace/'
     | '/_authenticated/workspace/$docHandle/'
   fileRoutesById: FileRoutesById
@@ -94,10 +129,18 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  UnauthenticatedRouteRoute: typeof UnauthenticatedRouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_unauthenticated': {
+      id: '/_unauthenticated'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof UnauthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -111,6 +154,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_unauthenticated/sign-up': {
+      id: '/_unauthenticated/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof UnauthenticatedSignUpRouteImport
+      parentRoute: typeof UnauthenticatedRouteRoute
+    }
+    '/_unauthenticated/sign-in': {
+      id: '/_unauthenticated/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof UnauthenticatedSignInRouteImport
+      parentRoute: typeof UnauthenticatedRouteRoute
     }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
@@ -174,9 +231,23 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface UnauthenticatedRouteRouteChildren {
+  UnauthenticatedSignInRoute: typeof UnauthenticatedSignInRoute
+  UnauthenticatedSignUpRoute: typeof UnauthenticatedSignUpRoute
+}
+
+const UnauthenticatedRouteRouteChildren: UnauthenticatedRouteRouteChildren = {
+  UnauthenticatedSignInRoute: UnauthenticatedSignInRoute,
+  UnauthenticatedSignUpRoute: UnauthenticatedSignUpRoute,
+}
+
+const UnauthenticatedRouteRouteWithChildren =
+  UnauthenticatedRouteRoute._addFileChildren(UnauthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  UnauthenticatedRouteRoute: UnauthenticatedRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -19,7 +19,7 @@ function AuthenticatedLayout() {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/" search={{ redirect: location.href }} />;
+    return <Navigate to="/sign-in" search={{ redirect: location.pathname }} />;
   }
 
   return (

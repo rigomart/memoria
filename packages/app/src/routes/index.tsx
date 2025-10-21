@@ -1,64 +1,28 @@
-import { SignInButton, SignUpButton } from "@clerk/clerk-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
-import { ArrowRight, Brain, LogIn, RefreshCw, Sparkles, UserPlus, Zap } from "lucide-react";
-
+import { ArrowRight, Brain, LogIn, RefreshCw, Sparkles, Zap } from "lucide-react";
+import { z } from "zod/v3";
+import { PatternBackground } from "@/components/pattern-background";
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
+import { LandingHeader } from "../components/landing-header";
+
+const searchSchema = z.object({
+  redirect: z.string().optional(),
+});
 
 export const Route = createFileRoute("/")({
+  validateSearch: searchSchema,
   component: HomeRoute,
 });
 
 function HomeRoute() {
+  const { redirect } = Route.useSearch();
+  const redirectSearch = { redirect };
+
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-background text-foreground">
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.28),_transparent_55%),_radial-gradient(circle_at_bottom,_rgba(16,185,129,0.22),_transparent_60%),_repeating-linear-gradient(90deg,_rgba(148,163,184,0.12)_0,_rgba(148,163,184,0.12)_1px,transparent_1px,transparent_120px),_repeating-linear-gradient(0deg,_rgba(148,163,184,0.12)_0,_rgba(148,163,184,0.12)_1px,transparent_1px,transparent_120px)]" />
-      <header className="border-b border-border/70 bg-gradient-to-b from-background/95 via-background/90 to-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/75">
-        <div className="mx-auto flex h-12 w-full max-w-5xl items-center justify-between gap-6 px-4">
-          <Link
-            to="/"
-            className="flex items-center gap-2 rounded-full bg-primary/10 px-2 py-1 text-sm font-medium text-primary"
-          >
-            <span className="flex items-center gap-2">
-              <span className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">
-                <Brain className="size-5" />
-              </span>
-              <span>Memoria</span>
-            </span>
-          </Link>
-          <nav className="flex items-center gap-2 text-xs sm:text-sm">
-            <AuthLoading>
-              <span className="flex size-9 items-center justify-center rounded-full border border-border/60 bg-muted/30">
-                <Spinner className="size-4 text-muted-foreground" />
-              </span>
-            </AuthLoading>
-            <Unauthenticated>
-              <div className="flex items-center gap-2">
-                <SignInButton mode="modal">
-                  <Button type="button" variant="ghost" size="sm">
-                    <LogIn className="size-4" />
-                    Sign in
-                  </Button>
-                </SignInButton>
-                <SignUpButton mode="modal">
-                  <Button type="button" size="sm">
-                    <UserPlus className="size-4" />
-                    Create account
-                  </Button>
-                </SignUpButton>
-              </div>
-            </Unauthenticated>
-            <Authenticated>
-              <Button asChild type="button" size="sm">
-                <Link to="/workspace">Go to workspace</Link>
-              </Button>
-            </Authenticated>
-          </nav>
-        </div>
-      </header>
+      <LandingHeader redirect={redirect} />
       <main className="flex flex-1 items-stretch">
-        <section className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-4 py-12 sm:px-6 sm:py-20">
+        <section className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-4 py-12 sm:px-6 sm:py-16">
           <div className="mx-auto max-w-2xl space-y-6 text-center">
             <span className="inline-flex items-center rounded-full border border-border/60 bg-background/70 px-3 py-1 text-xs text-muted-foreground shadow-sm">
               Context Your AI Agent Can Find
@@ -71,28 +35,18 @@ function HomeRoute() {
               and your AI agent pulls exactly what it needs automatically.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-              <Unauthenticated>
-                <SignUpButton mode="modal">
-                  <Button type="button" size="lg">
-                    <Sparkles className="size-4" />
-                    Start capturing
-                  </Button>
-                </SignUpButton>
-                <SignInButton mode="modal">
-                  <Button type="button" variant="outline" size="lg">
-                    <LogIn className="size-4" />
-                    Sign in
-                  </Button>
-                </SignInButton>
-              </Unauthenticated>
-              <Authenticated>
-                <Button asChild type="button" size="lg">
-                  <Link to="/workspace">
-                    <ArrowRight className="size-4" />
-                    Continue in your workspace
-                  </Link>
-                </Button>
-              </Authenticated>
+              <Button asChild type="button" size="lg">
+                <Link to="/sign-up" search={redirectSearch}>
+                  <Sparkles className="size-4" />
+                  Get started for free
+                </Link>
+              </Button>
+              <Button asChild type="button" variant="outline" size="lg">
+                <Link to="/sign-in" search={redirectSearch}>
+                  <LogIn className="size-4" />
+                  Sign in
+                </Link>
+              </Button>
             </div>
           </div>
 
@@ -167,11 +121,13 @@ function HomeRoute() {
           </div>
         </section>
       </main>
-      <footer className="border-t border-border/70 bg-background/95">
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-2 px-4 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <span>Built for developers who work with AI agents.</span>
-        </div>
-      </footer>
+      <PatternBackground>
+        <footer className="border-t border-border/70 bg-background/50 h-full">
+          <div className="mx-auto flex w-full max-w-5xl flex-col gap-2 px-4 py-4 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+            <span>Built for developers who work with AI agents.</span>
+          </div>
+        </footer>
+      </PatternBackground>
     </div>
   );
 }
