@@ -19,7 +19,7 @@
     "changeset": "changeset",
     "changeset:version": "changeset version",
     "changeset:publish": "changeset publish",
-    "release": "bun run --filter @mirdor/contextor-mcp build && bun run changeset:publish"
+    "release": "bun run --filter @rigos-lab/contextor-mcp build && bun run changeset:publish"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.5",
