@@ -29,36 +29,32 @@ CONTEXTOR_PAT=mem_... node dist/index.js
 
 ## MCP Client Configuration
 
-### Claude Desktop (`claude_desktop_config.json`)
+### Cursor (`~/.cursor/mcp.json`)
 
 ```json
 {
   "mcpServers": {
     "contextor": {
-      "command": "node",
-      "args": ["./path/to/dist/index.js"],
+      "command": "npx",
+      "args": [
+        "-y",
+        "@rigos-lab/contextor-mcp"
+      ],
       "env": {
-        "CONTEXTOR_PAT": "mem_your_token_here"
+          "CONTEXTOR_PAT": "your_token_here"
       }
     }
   }
 }
 ```
 
-### Cursor (`~/.cursor/rules.json`)
+### Codex CLI (`~/.codex/config.toml`)
 
-```json
-{
-  "mcpServers": {
-    "contextor": {
-      "command": "node",
-      "args": ["./path/to/dist/index.js"],
-      "env": {
-        "CONTEXTOR_PAT": "mem_your_token_here"
-      }
-    }
-  }
-}
+```toml
+[mcp_servers.contextor]
+command = "npx"
+args = ["-y", "@rigos-lab/contextor-mcp"]
+env = {"CONTEXTOR_PAT" = "your_token_here"}
 ```
 
 ## Exposed Tools
