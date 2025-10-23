@@ -1,5 +1,11 @@
 # @mirdor/contextor-mcp
 
+## 0.1.1
+
+### Patch Changes
+
+- 0fddd4b: Update proper mcp server setup instructions for Cursor and Codex
+
 ## 0.1.0
 
 ### Minor Changes
