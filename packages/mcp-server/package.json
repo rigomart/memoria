@@ -1,6 +1,6 @@
 {
   "name": "@rigos-lab/contextor-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Contextor MCP Server",
   "type": "module",
   "repository": {
